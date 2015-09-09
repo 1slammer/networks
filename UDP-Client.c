@@ -13,7 +13,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#define SERVERPORT "10010"  // the port users will be connecting to
+#define SERVERPORT "10019"  // the port users will be connecting to
 
 int main(int argc, char *argv[])
 {
@@ -61,7 +61,15 @@ int main(int argc, char *argv[])
   freeaddrinfo(servinfo);
 
   printf("talker: sent %d bytes to %s\n", numbytes, argv[1]);
-  close(sockfd);
 
+  char *buf[20];
+  struct sockaddr_storage sender;
+  socklen_t sendsize = sizeof(sender);
+
+  int response;
+  response = recvfrom(sockfd, &buf, sizeof(buf), 0, 
+          (struct sockaddr *)&sender, &sendsize);
+
+  close(sockfd);
   return 0;
 }

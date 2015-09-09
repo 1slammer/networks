@@ -27,6 +27,8 @@ public static void main(String args[]) throws Exception  {
       byte[] sendData;
       DatagramPacket sendPacket;
 
+      System.out.println(data);
+
       switch (operation) {
         case 5: 
           int numConsonants = 0;
