@@ -27,7 +27,13 @@ public static void main(String args[]) throws Exception  {
       byte[] sendData;
       DatagramPacket sendPacket;
 
-      System.out.println(data);
+      //for (int i=0; i < data.length; i++)
+      int i = 0;
+      while (data[i] != 0)
+      {
+          System.out.println((int)data[i]);
+          i++;
+      }
 
       switch (operation) {
         case 5: 
