@@ -104,7 +104,8 @@ int main(int argc, char *argv[]) // _M1
 		break;
 	}
 
-	if (p == NULL)  {
+	if (p == NULL)
+	{
 		fprintf(stderr, "server: failed to bind\n");
 		return 2;
 	}
