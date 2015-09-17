@@ -81,10 +81,14 @@ public class ClientTCP
 
     //Now the communication
     try
+    (   //Establish a connection with the server via socket
+        Socket socket = new Socket(address, port);
+    )
     {
-      //Establish a connection with the server via socket
-      Socket socket = new Socket(address, port);
-
+      //Set up output stream for user(client)
+      OutputStream stream = socket.getOutputStream();
+      OutputStreamWriter osw = new OutputStreamWriter(stream);
+      BufferedWriter output = new BufferedWriter(osw);
 
 
     }
@@ -126,6 +130,7 @@ public class ClientTCP
   {
     return message;
   }
+
 
 
 
