@@ -18,6 +18,7 @@ public class ClientTCP
   private static InetAddress address;     //Address of the server
   private static int operation;           //Operation request number
   private static String message;          //Message by the user
+  private static int messageSize;         //size of the text message NOT the total message sent to server!!!
 
 
   /*
@@ -32,6 +33,12 @@ public class ClientTCP
     if (args.length != 5)
     {
       System.out.println("\n\nInput the correct usage: <clientName> <serverName> <portNumber> <operation> <message>\n");
+      return;
+    }
+    messageSize = args[4].length();
+    if(messageSize > 252)
+    {
+      System.out.println("\n\nYou message must be less than or equal to 252 characters");
       return;
     }
 
