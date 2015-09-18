@@ -16,9 +16,10 @@ public class ClientTCP
   private static String clientName;       //Name of client machine or username
   private static int port;                //Port for the server
   private static InetAddress address;     //Address of the server
-  private static int operation;           //Operation request number
-  private static String message;          //Message by the user
+  private static byte operation;           //Operation request number
+  private static char[] message;          //Message by the user
   private static int messageSize;         //size of the text message NOT the total message sent to server!!!
+  private static byte requestID = 1;      //Request id for the client (allowed to be hardcoded as of 17 Sep 2015)
 
 
   /*
@@ -35,6 +36,7 @@ public class ClientTCP
       System.out.println("\n\nInput the correct usage: <clientName> <serverName> <portNumber> <operation> <message>\n");
       return;
     }
+    //First part of setting the size of the data to be sent to the server. And checking input error
     messageSize = args[4].length();
     if(messageSize > 252)
     {
@@ -75,7 +77,7 @@ public class ClientTCP
     //Set operation value
     try
     {
-      operation = Integer.parseInt(args[3]);
+      operation = (byte)Integer.parseInt(args[3]);
     }
     catch(NumberFormatException e)
     {
@@ -83,10 +85,23 @@ public class ClientTCP
       e.printStackTrace();
     }
 
-    //Set the user's messsage
-    message = args[4];
+    //Set the size of the data to be sent to the server.
+    byte dataSize = intToByte(messageSize + 3);
 
-    //Now the communication
+    //Set the size of the data to be sent to the Server
+    byte[] data = new byte[dataSize];
+
+    //Setup the first part of the data to send to the server
+    data[0] = dataSize;
+    data[1] = requestID;
+    data[2] = byteToByte(operation);
+
+    //Set the user's messsage
+    char[] tempMsg = args[4].toCharArray();
+
+    
+
+    //Now the communication part
     try
     (   //Establish a connection with the server via socket
         Socket socket = new Socket(address, port);
@@ -96,6 +111,9 @@ public class ClientTCP
       OutputStream stream = socket.getOutputStream();
       OutputStreamWriter osw = new OutputStreamWriter(stream);
       BufferedWriter output = new BufferedWriter(osw);
+
+      //load the packet
+
 
 
     }
@@ -133,11 +151,24 @@ public class ClientTCP
   }
 
   /* Return the user's (client's) message */
-  private static String getMessage()
+  private static char[] getMessage()
   {
     return message;
   }
 
+  /* returns an unsigned byte for our purposes of total message length  */
+  private static byte intToByte(int i)
+  {
+    byte x = (byte)(i & 0xFF);
+    return x;
+  }
+
+  /* Java sets signed bytes, lets make them unsigned    */
+  private static byte byteToByte(byte i)
+  {
+    byte x = i & 0xFF;
+    return x;
+  }
 
 
 
