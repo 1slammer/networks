@@ -112,18 +112,37 @@ public class Strings
     int check = Integer.parseInt(Integer.toHexString((int)temp2[0]));
     System.out.println("check: " + check);
 
-    String temp3 = "";
+//     String temp3 = "";
+//     for(int i = 0; i < temp.length; i++)
+//     {
+//       temp3 += Integer.toHexString((int)temp2[i]);
+//     }
+
+    byte[] news = new byte[temp.length];
+    // for(int i = 0; i < temp.length; i++)
+    // {
+    //   news[i] = intToByte(Integer.parseInt(Integer.toHexString(temp2[i])));
+    // }
+
+    //more readable than the immediate for-loop
     for(int i = 0; i < temp.length; i++)
     {
-      temp3 += Integer.toHexString((int)temp2[i]);
+      String s = Integer.toHexString(temp2[i]);
+      int hex = Integer.parseInt(s);
+      news[i] = intToByte(hex);
     }
 
-    System.out.println("Temp3 bytes: " + temp3);
-
-    for(int i = 0; i < temp3.length(); i++)
+    for(byte x : news)
     {
-      System.out.println(temp3.charAt(i));
+      System.out.println(x);
     }
+
+//     System.out.println("Temp3 bytes: " + temp3);
+//
+//     for(int i = 0; i < temp3.length(); i++)
+//     {
+//       System.out.println(temp3.charAt(i));
+//     }
 
     // char[] temp4 = temp3.toCharArray();
     //
@@ -174,22 +193,22 @@ public class Strings
     // System.out.println((char)what[30]);
     // System.out.println((char)what[31]);
 
-    String message  = "This is my message";
-    byte[] data = new byte[message.length()];
-
-    for(int i = 0; i < data.length; i++)
-    {
-      char character = message.charAt(i);
-      int characterDecNumber = (int)character;
-      String characterStringHexNumber = Integer.toHexString(characterDecNumber);
-      int characterHexNumber = Integer.parseInt(characterStringHexNumber.toString());
-      data[i] = intToByte(characterHexNumber);
-    }
-
-    for(byte x : data)
-    {
-      System.out.println(x);
-    }
+//     String message  = "This is my message";
+//     byte[] data = new byte[message.length()];
+//
+//     for(int i = 0; i < data.length; i++)
+//     {
+//       char character = message.charAt(i);
+//       int characterDecNumber = (int)character;
+//       String characterStringHexNumber = Integer.toHexString(characterDecNumber);
+//       int characterHexNumber = Integer.parseInt(characterStringHexNumber.toString());
+//       data[i] = intToByte(characterHexNumber);
+//     }
+//
+//     for(byte x : data)
+//     {
+//       System.out.println(x);
+//     }
 
   }//end main
 
@@ -225,6 +244,12 @@ public class Strings
 
          return buf;
 
-    }
+  }
+
+//     private static byte stringToByte(String s)
+//     {
+//       byte x = (byte) (s & 0xFF);
+//       return x;
+//     }
 
 }
