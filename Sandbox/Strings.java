@@ -1,4 +1,4 @@
-
+// import org.apache.commons.codec.binary.Hex;
 
 
 public class Strings
@@ -211,13 +211,39 @@ public class Strings
 //     }
 
 
-    char[] message = "ABCDEFGHIJKLMNOPQRST".toCharArray();
-    byte[] data = packetSetUp(message);
+    // char[] message = "ABCDEFGHIJKLMNOPQRST".toCharArray();
+    // byte[] data = packetSetUp(message);
+    //
+    // for(byte x : data)
+    // {
+    //   System.out.println(x);
+    // }
+    //
+    // packetSetUp2(data);
 
-    for(byte x : data)
-    {
-      System.out.println(x);
-    }
+    // char[] data = new char[message.length];
+    //
+    // for(int i = 0; i < data.length; i++)
+    // {
+    //   toUnsignedCharArray((int)message[i], 4);
+    // }
+    //
+    // int x = 0xA;
+    // System.out.print(x);
+    //
+    // String[] b = new String[5];
+    // b[0] = "3";
+    // b[1] = "4";
+    // b[2] = "80";
+    // b[3] = "my message";
+
+
+    int x = 130;
+    int y = x & 0xFF;
+    short z = (short)y;
+    
+
+
 
   }//end main
 
@@ -279,22 +305,42 @@ public class Strings
       j++;
     }
 
-    //make all values hex
-    for(int i = 0; i < ret.length; i++)
-    {
-      String hexString = Integer.toHexString(ret[i]);
-      int hexNumber = Integer.parseInt(hexString, 16);
-      ret[i] = byteToByte(ret[i]);
-    }
-
     return ret;
-
-   }
+  //
+  //   byte[] result = new byte[ret.length];
+  //   //make all values hex
+  //   // for(int i = 0; i < ret.length; i++)
+  //   // {
+  //   //   String hexString = Integer.toHexString(ret[i]);
+  //   //   int hexNumber = Integer.parseInt(hexString, 10);
+  //   //   result[i] = byteToByte((byte)hexNumber);
+  //   // }
+  //
+  //   Hex hex = new Hex();
+  //   results = hex.encode(ret);
+  //
+  //   return results;
+  //
+    }
 
 //     private static byte stringToByte(String s)
 //     {
 //       byte x = (byte) (s & 0xFF);
 //       return x;
 //     }
+
+private static char[] packetSetUp2(byte[] next)
+{
+  char[] ret = new char[next.length];
+  char[] test = new char[next.length];
+
+  for(int i = 0; i < next.length; i++)
+  {
+      ret[i] =  (char)(next[i] & 0xFF);
+      //test[i] = (char)(0xFF & (int)ret[i]);
+  }
+  return ret;
+
+}
 
 }

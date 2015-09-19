@@ -91,15 +91,10 @@ public class ClientTCP
     //Set the size of the data to be sent to the Server
     byte[] data = new byte[dataSize];
 
-    //Setup the first part of the data to send to the server
-    data[0] = dataSize;
-    data[1] = requestID;
-    data[2] = byteToByte(operation);
+    //Set up the packet to be sent to server
+    message = args[4].toCharArray();
+    data = packetSetUp(message);
 
-    //Set the user's messsage
-    char[] tempMsg = args[4].toCharArray();
-
-    
 
     //Now the communication part
     try
@@ -109,22 +104,36 @@ public class ClientTCP
     {
       //Set up output stream for user(client)
       OutputStream stream = socket.getOutputStream();
-      OutputStreamWriter osw = new OutputStreamWriter(stream);
-      BufferedWriter output = new BufferedWriter(osw);
+      // OutputStreamWriter osw = new OutputStreamWriter(stream);
+      // BufferedWriter output = new BufferedWriter(osw);
 
-      //load the packet
+      //Send the packet. NOTE we may need to add a '\n' to packet for servers to process the end of our packet correctly
+      stream.write(data);
+      stream.flush();
+      System.out.println("\nData has been sent...\n");
+
+      //Set up input stream for server response
+      InputStream is = socket.getInputStream();
+      InputStreamReader isr = new InputStreamReader(is);
+      BufferedReader serverResponse = new BufferedReader(isr);
+
+      //Get the server's response
+      char[] received = new char[255];
+      int amountRead = serverResponse.read(received, 0, received.length);
+      System.out.println("Response from the server: ");
+      System.out.println(received);
 
 
 
     }
     catch(Exception e)
     {
-
+      e.printStackTrace();
     }
 
 
 
-  }
+  }//end main
 
   /*  Returns the client's Name */
   private static String getClientName()
@@ -166,9 +175,38 @@ public class ClientTCP
   /* Java sets signed bytes, lets make them unsigned    */
   private static byte byteToByte(byte i)
   {
-    byte x = i & 0xFF;
+    byte x = (byte)(i & 0xFF);
     return x;
   }
+
+  private static byte[] packetSetUp(char[] messaged)
+  {
+    byte[] ret = new byte[messageSize + 3];
+    byte[] buffer = new byte[messaged.length];
+
+    //Ensure the message elements are byte size and convert them to bytes
+    for(int i = 0; i < messaged.length; i++)
+    {
+      buffer[i] = byteToByte((byte)messaged[i]);
+    }
+
+    //Set what we know
+    ret[0] = intToByte(messageSize + 3);
+    ret[1] = intToByte(requestID);
+    ret[2] = intToByte(operation);
+
+    //Copy over the message
+    int j = 0;
+    for(int i = 3; i < ret.length; i++)
+    {
+      ret[i] = buffer[j];
+      j++;
+    }
+
+    return ret;
+
+  }
+
 
 
 
