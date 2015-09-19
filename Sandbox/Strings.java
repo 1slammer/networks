@@ -1,4 +1,4 @@
-
+// import org.apache.commons.codec.binary.Hex;
 
 
 public class Strings
@@ -109,33 +109,33 @@ public class Strings
     //   System.out.println(i);
     // }
 
-    int check = Integer.parseInt(Integer.toHexString((int)temp2[0]));
-    System.out.println("check: " + check);
-
-//     String temp3 = "";
+//     int check = Integer.parseInt(Integer.toHexString((int)temp2[0]));
+//     System.out.println("check: " + check);
+//
+// //     String temp3 = "";
+// //     for(int i = 0; i < temp.length; i++)
+// //     {
+// //       temp3 += Integer.toHexString((int)temp2[i]);
+// //     }
+//
+//     byte[] news = new byte[temp.length];
+//     // for(int i = 0; i < temp.length; i++)
+//     // {
+//     //   news[i] = intToByte(Integer.parseInt(Integer.toHexString(temp2[i])));
+//     // }
+//
+//     //more readable than the immediate for-loop
 //     for(int i = 0; i < temp.length; i++)
 //     {
-//       temp3 += Integer.toHexString((int)temp2[i]);
+//       String s = Integer.toHexString(temp2[i]);
+//       int hex = Integer.parseInt(s);
+//       news[i] = intToByte(hex);
 //     }
-
-    byte[] news = new byte[temp.length];
-    // for(int i = 0; i < temp.length; i++)
-    // {
-    //   news[i] = intToByte(Integer.parseInt(Integer.toHexString(temp2[i])));
-    // }
-
-    //more readable than the immediate for-loop
-    for(int i = 0; i < temp.length; i++)
-    {
-      String s = Integer.toHexString(temp2[i]);
-      int hex = Integer.parseInt(s);
-      news[i] = intToByte(hex);
-    }
-
-    for(byte x : news)
-    {
-      System.out.println(x);
-    }
+//
+//     for(byte x : news)
+//     {
+//       System.out.println(x);
+//     }
 
 //     System.out.println("Temp3 bytes: " + temp3);
 //
@@ -210,6 +210,41 @@ public class Strings
 //       System.out.println(x);
 //     }
 
+
+    // char[] message = "ABCDEFGHIJKLMNOPQRST".toCharArray();
+    // byte[] data = packetSetUp(message);
+    //
+    // for(byte x : data)
+    // {
+    //   System.out.println(x);
+    // }
+    //
+    // packetSetUp2(data);
+
+    // char[] data = new char[message.length];
+    //
+    // for(int i = 0; i < data.length; i++)
+    // {
+    //   toUnsignedCharArray((int)message[i], 4);
+    // }
+    //
+    // int x = 0xA;
+    // System.out.print(x);
+    //
+    // String[] b = new String[5];
+    // b[0] = "3";
+    // b[1] = "4";
+    // b[2] = "80";
+    // b[3] = "my message";
+
+
+    int x = 130;
+    int y = x & 0xFF;
+    short z = (short)y;
+    
+
+
+
   }//end main
 
 
@@ -246,10 +281,66 @@ public class Strings
 
   }
 
+  private static byte[] packetSetUp(char[] message)
+  {
+    byte[] ret = new byte[message.length + 3];
+    byte[] buffer = new byte[message.length];
+
+    //Ensure the message elements are byte size and convert them to bytes
+    for(int i = 0; i < message.length; i++)
+    {
+      buffer[i] = byteToByte((byte)message[i]);
+    }
+
+    //Set what we know
+    ret[0] = intToByte(message.length + 3);
+    ret[1] = intToByte(5);
+    ret[2] = intToByte(80);
+
+    //Copy over the message
+    int j = 0;
+    for(int i = 3; i < ret.length; i++)
+    {
+      ret[i] = buffer[j];
+      j++;
+    }
+
+    return ret;
+  //
+  //   byte[] result = new byte[ret.length];
+  //   //make all values hex
+  //   // for(int i = 0; i < ret.length; i++)
+  //   // {
+  //   //   String hexString = Integer.toHexString(ret[i]);
+  //   //   int hexNumber = Integer.parseInt(hexString, 10);
+  //   //   result[i] = byteToByte((byte)hexNumber);
+  //   // }
+  //
+  //   Hex hex = new Hex();
+  //   results = hex.encode(ret);
+  //
+  //   return results;
+  //
+    }
+
 //     private static byte stringToByte(String s)
 //     {
 //       byte x = (byte) (s & 0xFF);
 //       return x;
 //     }
+
+private static char[] packetSetUp2(byte[] next)
+{
+  char[] ret = new char[next.length];
+  char[] test = new char[next.length];
+
+  for(int i = 0; i < next.length; i++)
+  {
+      ret[i] =  (char)(next[i] & 0xFF);
+      //test[i] = (char)(0xFF & (int)ret[i]);
+  }
+  return ret;
+
+}
 
 }
