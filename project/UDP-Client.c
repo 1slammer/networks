@@ -38,11 +38,37 @@ int main(int argc, char *argv[])
     exit(1);
   }
 
+  char* progName = argv[0];
+  char* clientName = argv[1];
+  char* serverName = argv[2];
+  char* portNumber = argv[3];
+  char* operation = argv[4];
+  char* msgString = argv[5];
+
+  printf("progName: %s\n", progName);
+  printf("clientName: %s\n", clientName);
+  printf("serverName: %s\n", serverName);
+  printf("portNumber: %s\n", portNumber);
+  printf("operation: %s\n", operation);
+  printf("msgString: %s\n", msgString);
+
+  // Convert character of integer from command line parameter to a
+  // hex value in char*
+  *operation = (char)atoi(operation);
+  printf("operation: %x\n", *operation);
+  printf("afterwards\n");
+
+  //sprintf(operation, "%x", test);
+  //int test = atoi(operation);
+  //*operation = (char)test;
+  //*operation = 0x50;
+
+
   memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_UNSPEC;
   hints.ai_socktype = SOCK_DGRAM;
 
-  if ((rv = getaddrinfo(argv[2], argv[3], &hints, &servinfo)) != 0) {
+  if ((rv = getaddrinfo(serverName, portNumber, &hints, &servinfo)) != 0) {
     fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
     return 1;
   }
@@ -64,21 +90,22 @@ int main(int argc, char *argv[])
   }
 
   msg_t message;
-  printf("sizeof(message): %d\n", (int)sizeof(message));
   message.request_id = 1;
-  printf("sizeof(message.request_id): %d\n", (int)sizeof(message.request_id));
-  message.operation = 5;
-  printf("sizeof(message.operation): %d\n", (int)sizeof(message.operation));
-  unsigned char t[5] = {'a', 'w', 'd', 'x', 'w'};
-  printf("sizeof(t): %d\n", (int)sizeof(t));
+  message.operation = *operation;
   int i;
-  for (i=0; i<sizeof(t); i++)
-      message.data[i] = t[i];
-  //message.data = &t;
-  printf("sizeof(message.data): %d\n", (int)sizeof(message.data));
+  for (i=0; i<strlen(msgString); i++)
+      message.data[i] = msgString[i];
   message.size = sizeof(message.request_id) + sizeof(message.operation)
-      + sizeof(t) + sizeof(message.size);
+      + strlen(msgString) + sizeof(message.size);
+
+  printf("sizeof(message): %d\n", (int)sizeof(message));
+  printf("sizeof(message.request_id): %d\n", (int)sizeof(message.request_id));
+  printf("sizeof(message.operation): %d\n", (int)sizeof(message.operation));
+  printf("message.operation: %x\n", message.operation);
+  printf("sizeof(msgString): %d\n", (int)strlen(msgString));
+  printf("sizeof(message.data): %d\n", (int)sizeof(message.data));
   printf("sizeof(message): %d\n", (int)message.size);
+
   if ((numbytes = sendto(sockfd, &message, message.size, 0,
        p->ai_addr, p->ai_addrlen)) == -1) {
     perror("talker: sendto");
@@ -89,13 +116,20 @@ int main(int argc, char *argv[])
 
   printf("talker: sent %d bytes to %s\n", numbytes, argv[2]);
 
-  char *buf[20];
+  char *buf[6];
   struct sockaddr_storage sender;
   socklen_t sendsize = sizeof(sender);
 
   int response;
   response = recvfrom(sockfd, &buf, sizeof(buf), 0, 
           (struct sockaddr *)&sender, &sendsize);
+  char* yes = (char*)buf;
+  for (i=0; i<response; i++)
+      printf("response: %x\n", yes[i]);
+  printf("Recieved Response:\n");
+  printf("Request ID: %d\n", response);
+  printf("Response: %d\n", buf[0]);
+  printf("sizeof(buf[0]): %d\n", sizeof(buf[0]));
 
   close(sockfd);
   return 0;
