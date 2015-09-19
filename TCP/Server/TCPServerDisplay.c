@@ -18,14 +18,15 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <ctype.h>
 
 // _M1 Not needed anymore  #define PORT "3490"  // the port users will be connecting to
 
 #define BACKLOG 10	 // how many pending connections queue will hold
 
-#define MAXDATASIZE 100 // _M2  max number of bytes we can get at once
+#define MAXDATASIZE 256 // _M2  max number of bytes we can get at once
 
-void displayBuffer(char *Buffer, int length); // _M3
+char *handlePacket(char *Buffer, int length); // _M3
 
 void sigchld_handler(int s)
 {
@@ -148,21 +149,84 @@ int main(int argc, char *argv[]) // _M1
 		{ // this is the child process
 		  close(sockfd); // child doesn't need the listener
 		  /* _M2 Server will only receive */
-		  // _M2 if (send(new_fd, "Hello, world!", 13, 0) == -1)
-		  // _M2	perror("send");
-		  // _M2 Begin add
+		  if (send(new_fd, "Hello, world!", 13, 0) == -1)
+		  	perror("send");
 		  if ((numbytes = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1)
 			{
 		    perror("recv");
 		    exit(1);
 		  }
+	unsigned char request = buf[1];
 
-		  buf[numbytes] = '\0';
 
-		  printf("Server: received '%s'\n",buf);
-		  // _M2 End add
+	if(buf[2] == 0x05) {
+		int numConsonants = 0;
+          for(int x = 3; x < sizeof(buf); x++) {
+            unsigned char ch = buf[x];
+            if (ch == 'a' || ch == 'e' || ch == 'i' || 
+                                        ch == 'o' || ch == 'u')
+                        {
+                            //do nothing
+                        }
+                        else
+                        { 
+                            numConsonants++;
+                        }
+          }
 
-		  displayBuffer(buf,numbytes); // _M3
+          unsigned char sendData[3];
+          sendData[0] = 0x03;
+          sendData[1] = request;
+          sendData[2] = (unsigned char) numConsonants;                   
+          if (send(new_fd, sendData, sizeof(sendData), 0) == -1)
+		  			perror("send");
+	}
+	else if(buf[2] == 0x50) {
+		unsigned char an_buf[256];
+		int x;
+		int y = 0;
+		for(x = 3; x < sizeof(buf); x++) {
+            unsigned char ch = buf[x];
+            
+            if (ch == 'a' || ch == 'e' || ch == 'i' || 
+                                        ch == 'o' || ch == 'u')
+                        {
+                            //do nothing
+                        }
+                        else
+                        { 
+                        		an_buf[y] = ch;
+                            y++;
+
+                        }
+          }
+          char response[y+2];
+          memset(response, 0, sizeof(response));
+          response[0] = sizeof(response);
+          response[1] = request;
+          int z;
+          for(z = 2; z < sizeof(response); z++) {
+            response[z] = an_buf[z-2];
+          }
+          if (send(new_fd, response, sizeof(response), 0) == -1)
+		  			perror("send");
+          
+	}
+	else if(buf[2] == 0x0A) {
+		unsigned char response[sizeof(buf) - 1];
+		memset(response, 0, sizeof(response));
+		response[0] = sizeof(response);
+		response[1] = request;
+		int x;
+		for(x = 2; x < sizeof(response); x++){
+			char ch = (char) toupper(buf[x + 1]);
+			response[x] = ch;
+		}
+		if (send(new_fd, response, sizeof(response), 0) == -1)
+		  			perror("send");
+	}
+
+		 
 
 		  close(new_fd);
 		  exit(0);
@@ -173,25 +237,4 @@ int main(int argc, char *argv[]) // _M1
 	return 0;
 }
 
-// _M3 Begin
-void displayBuffer(char *Buffer, int length)
-{
-	int currentByte, column;
 
-	currentByte = 0;
-	printf("\n>>>>>>>>>>>> Content in hexadecimal <<<<<<<<<<<\n");
-	while (currentByte < length)
-	{
-  	printf("%3d: ", currentByte);
-  	column =0;
-  	while ((currentByte < length) && (column < 10))
-		{
-    	printf("%2x ",Buffer[currentByte]);
-    	column++;
-    	currentByte++;
-  	}
-  	printf("\n");
- 	}
- 	printf("\n\n");
-}
-// _M3 End
