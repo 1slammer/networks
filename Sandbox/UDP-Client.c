@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 
   printf("talker: sent %d bytes to %s\n", numbytes, argv[2]);
 
-  char *buf[6];
+  char *buf[1024];
   struct sockaddr_storage sender;
   socklen_t sendsize = sizeof(sender);
 
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
           (struct sockaddr *)&sender, &sendsize);
   char* yes = (char*)buf;
   for (i=0; i<response; i++)
-      printf("response: %x\n", yes[i]);
+      printf("response: %d\n", yes[i]);
   printf("Recieved Response:\n");
   printf("Request ID: %d\n", response);
   printf("Response: %d\n", buf[0]);
