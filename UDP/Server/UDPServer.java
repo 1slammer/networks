@@ -117,7 +117,7 @@ public static void main(String args[]) throws Exception  {
       byte[] newBytes = myBuilder.toString().getBytes();
 
       byte[] sendData = new byte[myBuilder.length() + 2];
-      sendData[0] = (byte)myBuilder.length() + 2;
+      sendData[0] = (byte)(myBuilder.length() + 2);
       sendData[1] = request;
       for(int x = 0; x < sendData.length-2; x++){
         sendData[x + 2] = newBytes[x];
