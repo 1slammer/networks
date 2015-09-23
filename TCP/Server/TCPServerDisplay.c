@@ -160,7 +160,8 @@ int main(int argc, char *argv[]) // _M1
 			if(buf[2] == 0x05)
 			{
 					int numConsonants = 0;
-          for(int x = 3; x < numbytes; x++)
+                int x;
+          for(x = 3; x < numbytes; x++)
 					{
             unsigned char ch = tolower(buf[x]);
 
