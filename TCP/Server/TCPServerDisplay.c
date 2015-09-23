@@ -140,93 +140,116 @@ int main(int argc, char *argv[]) // _M1
 			continue;
 		}
 
-		inet_ntop(their_addr.ss_family,
-			get_in_addr((struct sockaddr *)&their_addr),
-			s, sizeof s);
+		inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
 		printf("server: got connection from %s\n", s);
 
 		if (!fork())
 		{ // this is the child process
 		  close(sockfd); // child doesn't need the listener
-		  /* _M2 Server will only receive */
-		  if (send(new_fd, "Hello, world!", 13, 0) == -1)
-		  	perror("send");
+
+			//Receive the message from the Client
 		  if ((numbytes = recv(new_fd, buf, MAXDATASIZE-1, 0)) == -1)
 			{
 		    perror("recv");
 		    exit(1);
 		  }
-	unsigned char request = buf[1];
 
+		  unsigned char request = buf[1];
 
-	if(buf[2] == 0x05) {
-		int numConsonants = 0;
-          for(int x = 3; x < sizeof(buf); x++) {
-            unsigned char ch = buf[x];
-            if (ch == 'a' || ch == 'e' || ch == 'i' || 
-                                        ch == 'o' || ch == 'u')
-                        {
-                            //do nothing
-                        }
-                        else
-                        { 
-                            numConsonants++;
-                        }
-          }
+			//Get consonant count
+			if(buf[2] == 0x05)
+			{
+					int numConsonants = 0;
+          for(int x = 3; x < numbytes; x++)
+					{
+            unsigned char ch = tolower(buf[x]);
 
-          unsigned char sendData[3];
-          sendData[0] = 0x03;
-          sendData[1] = request;
-          sendData[2] = (unsigned char) numConsonants;                   
-          if (send(new_fd, sendData, sizeof(sendData), 0) == -1)
+						//Check if vowel
+            if (!(ch == 'a' || ch == 'e' || ch == 'i' || ch == 'o' || ch == 'u'))
+            {
+							 //Check if in lowercase aschii character range
+							 if((ch >= 98) && (ch <= 122))
+							 {
+		               numConsonants++;
+							 }
+            }
+            else
+            {
+							//do nothing
+            }
+
+      		}//end for-loop
+
+        unsigned char sendData[3];
+        sendData[0] = 0x03;
+        sendData[1] = request;
+        sendData[2] = (unsigned char) numConsonants;
+        if (send(new_fd, sendData, sizeof(sendData), 0) == -1)
 		  			perror("send");
-	}
-	else if(buf[2] == 0x50) {
-		unsigned char an_buf[256];
-		int x;
-		int y = 0;
-		for(x = 3; x < sizeof(buf); x++) {
+			 }
+			 //Disemvoweling
+			 else if(buf[2] == 0x50)
+			 {
+				 unsigned char an_buf[256];
+				 int x;
+				 int y = 0;
+				 for(x = 3; x < numbytes; x++)
+				 {
             unsigned char ch = buf[x];
-            
-            if (ch == 'a' || ch == 'e' || ch == 'i' || 
-                                        ch == 'o' || ch == 'u')
-                        {
-                            //do nothing
-                        }
-                        else
-                        { 
-                        		an_buf[y] = ch;
-                            y++;
 
-                        }
-          }
+            if (!(tolower(ch) == 'a' || tolower(ch) == 'e' || tolower(ch) == 'i' || tolower(ch) == 'o' || tolower(ch) == 'u'))
+            {
+									an_buf[y] = ch;
+									y++;
+            }
+            else
+            {
+							//do nothing
+            }
+          }//end-for-loop
+
           char response[y+2];
           memset(response, 0, sizeof(response));
           response[0] = sizeof(response);
           response[1] = request;
           int z;
-          for(z = 2; z < sizeof(response); z++) {
+          for(z = 2; z < sizeof(response); z++)
+					{
             response[z] = an_buf[z-2];
           }
           if (send(new_fd, response, sizeof(response), 0) == -1)
 		  			perror("send");
-          
-	}
-	else if(buf[2] == 0x0A) {
-		unsigned char response[sizeof(buf) - 1];
-		memset(response, 0, sizeof(response));
-		response[0] = sizeof(response);
-		response[1] = request;
-		int x;
-		for(x = 2; x < sizeof(response); x++){
-			char ch = (char) toupper(buf[x + 1]);
-			response[x] = ch;
-		}
-		if (send(new_fd, response, sizeof(response), 0) == -1)
-		  			perror("send");
-	}
 
-		 
+			 }
+			 else if(buf[2] == 0x0A)
+			 {
+				 unsigned char response[buf[0] - 1];
+				 memset(response, 0, sizeof(response));
+				 response[0] = sizeof(response);
+				 //Test below added by Alex. one line
+				 printf("\nSize of response buffer: %d\n", (int)sizeof(response));
+				 response[1] = request;
+				 //Test below added by Alex. one line
+				 printf("\nClient request ID: %d\n", request);
+				 int x;
+				 for(x = 2; x < sizeof(response); x++)
+				 {
+					 char ch = (char) toupper(buf[x + 1]);
+					 response[x] = ch;
+				 }
+
+				 //Test added by Alex. for-loop
+				 int y;
+				 for(y = 0; y < sizeof(response); y++)
+				 {
+					 printf("%c", response[y]);
+				 }
+
+				 if (send(new_fd, response, sizeof(response), 0) == -1)
+		  			perror("send");
+			  }
+
+
 
 		  close(new_fd);
 		  exit(0);
@@ -236,5 +259,3 @@ int main(int argc, char *argv[]) // _M1
 
 	return 0;
 }
-
-

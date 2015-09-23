@@ -196,15 +196,15 @@ public class Strings
 //     String message  = "This is my message";
 //     byte[] data = new byte[message.length()];
 //
-//     for(int i = 0; i < data.length; i++)
-//     {
-//       char character = message.charAt(i);
-//       int characterDecNumber = (int)character;
-//       String characterStringHexNumber = Integer.toHexString(characterDecNumber);
-//       int characterHexNumber = Integer.parseInt(characterStringHexNumber.toString());
-//       data[i] = intToByte(characterHexNumber);
-//     }
-//
+    // for(int i = 0; i < data.length; i++)
+    // {
+    //   char character = message.charAt(i);
+    //   int characterDecNumber = (int)character;
+    //   String characterStringHexNumber = Integer.toHexString(characterDecNumber);
+    //   int characterHexNumber = Integer.parseInt(characterStringHexNumber.toString());
+    //   data[i] = intToByte(characterHexNumber);
+    // }
+
 //     for(byte x : data)
 //     {
 //       System.out.println(x);
@@ -241,7 +241,7 @@ public class Strings
     int x = 130;
     int y = x & 0xFF;
     short z = (short)y;
-    
+
 
 
 

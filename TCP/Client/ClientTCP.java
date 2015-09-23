@@ -3,7 +3,7 @@
   @author: Alex Aguirre, Dillon Beck, Wayne Nolen
   Lab 01
   Created: 17 Sep 2015
-  Modified:
+  Modified: 22 Sep 2015
 */
 
 import java.io.*;
@@ -118,12 +118,15 @@ public class ClientTCP
       BufferedReader serverResponse = new BufferedReader(isr);
 
       //Get the server's response
-      char[] received = new char[255];
-      int amountRead = serverResponse.read(received, 0, received.length);
-      System.out.println("Response from the server: ");
-      System.out.println(received);
-
-
+      byte sizeOfResponse = (byte)is.read();
+      byte[] response = new byte[sizeOfResponse - 1];
+      is.read(response, 0, response.length);
+      System.out.println("System response: ");
+      System.out.print(sizeOfResponse + " ");
+      for(byte b : response)
+      {
+         System.out.print(b + " ");
+      }
 
     }
     catch(Exception e)
