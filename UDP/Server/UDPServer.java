@@ -109,7 +109,7 @@ public static void main(String args[]) throws Exception  {
         
         if (Character.toLowerCase(ch) == 'a' || Character.toLowerCase(ch) == 'e' || Character.toLowerCase(ch) == 'i' || Character.toLowerCase(ch) == 'o' || Character.toLowerCase(ch) == 'u') {
             //do nothing
-        } else if ((ch >= 98) && (ch <= 122)){ 
+        } else if ((Character.toLowerCase(ch) >= 98) && (Character.toLowerCase(ch) <= 122)){ 
             myBuilder.append(ch);
         }
       }
