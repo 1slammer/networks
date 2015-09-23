@@ -124,8 +124,9 @@ int main(int argc, char *argv[])
   response = recvfrom(sockfd, &buf, sizeof(buf), 0, 
           (struct sockaddr *)&sender, &sendsize);
   char* yes = (char*)buf;
+  printf("Response ID: %d\n", buf[1]);
   printf("Response: ");
-    if(buf[2] < 20){
+    if (message.operation == 0x5) {
         printf("%d", buf[2]);
     }
     else {
