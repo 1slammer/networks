@@ -97,11 +97,11 @@ public class ClientTCP
 
 
     //Now the communication part
-    try
-    (   //Establish a connection with the server via socket
+    try {
+       //Establish a connection with the server via socket
         Socket socket = new Socket(address, port);
-    )
-    {
+    
+    
       //Set up output stream for user(client)
       OutputStream stream = socket.getOutputStream();
       // OutputStreamWriter osw = new OutputStreamWriter(stream);
