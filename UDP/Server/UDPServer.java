@@ -83,7 +83,7 @@ public static void main(String args[]) throws Exception  {
                     {
                         //do nothing
                     }
-                    else if((ch >= 98) && (ch <= 122))
+                    else if((Character.toLowerCase(ch) >= 98) && (Character.toLowerCase(ch) <= 122))
                     { 
                         numConsonants++;
                     }
