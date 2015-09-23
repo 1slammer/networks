@@ -31,7 +31,6 @@ public static void main(String args[]) throws Exception  {
       int i = 0;
       while (data[i] != 0)
       {
-          System.out.println(Integer.toHexString((int)data[i]));
           i++;
       }
 
@@ -58,15 +57,15 @@ public static void main(String args[]) throws Exception  {
         myBuilder.append(ch);
       }
       String capitalizedSentence = myBuilder.toString().toUpperCase();
-      System.out.println("cap sentence size: " + capitalizedSentence.length());
-      System.out.println("cap sentence size: " + length);
+      //System.out.println("cap sentence size: " + capitalizedSentence.length());
+      //System.out.println("cap sentence size: " + length);
       byte[] stringData = capitalizedSentence.getBytes();                   
       byte[] sendData = new byte[capitalizedSentence.length() + 2];
       sendData[0] = (byte)(capitalizedSentence.length() + 2);
       sendData[1] = request;
       for(int x = 0; x < capitalizedSentence.length(); x++){
         sendData[x + 2] = stringData[x];
-        System.out.println(capitalizedSentence.charAt(x));
+        //System.out.println(capitalizedSentence.charAt(x));
       }                                
       DatagramPacket sendPacket =  new DatagramPacket(sendData, sendData.length, IPAddress, port);                   
       serverSocket.send(sendPacket);                
@@ -74,11 +73,11 @@ public static void main(String args[]) throws Exception  {
     public static void numStringConsonants(byte[] data, int length, InetAddress IPAddress,
             int port, DatagramSocket serverSocket, byte request) throws Exception {
       int numConsonants = 0;
-      System.out.println("Data length: " + data.length);
-      System.out.println("Data length: " + length);
+      //System.out.println("Data length: " + data.length);
+      //System.out.println("Data length: " + length);
       for(int x = 3; x < length; x++) {
         char ch = (char) data[x];
-        System.out.println("Data msg data char: " + ch);
+        //System.out.println("Data msg data char: " + ch);
         if (Character.toLowerCase(ch) == 'a' || Character.toLowerCase(ch) == 'e' || Character.toLowerCase(ch) == 'i' || 
                                     Character.toLowerCase(ch) == 'o' || Character.toLowerCase(ch) == 'u')
                     {
@@ -97,7 +96,7 @@ public static void main(String args[]) throws Exception  {
       //sendData[3] = 0x05;
       //sendData[4] = 0x09;
       //sendData[5] = 0x08;                   
-      System.out.println("numConsonants" + numConsonants);
+      //System.out.println("numConsonants" + numConsonants);
       DatagramPacket sendPacket =  new DatagramPacket(sendData, sendData.length, IPAddress, port);                   
       serverSocket.send(sendPacket);                
     }
