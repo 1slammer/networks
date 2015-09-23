@@ -25,6 +25,19 @@ struct msg
 
  typedef struct msg msg_t;
 
+static struct timeval t1;
+
+static inline void start() {
+    gettimeofday(&t1, NULL);
+}
+
+static inline void stop() {
+    struct timeval t2;
+    gettimeofday(&t2, NULL);
+
+    unsigned long long t = 1000 * (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec);
+    printf("Round Trip Time: %llu microseconds\n", t);
+}
 
 int main(int argc, char *argv[])
 {
@@ -111,6 +124,7 @@ int main(int argc, char *argv[])
     perror("talker: sendto");
     exit(1);
   }
+  start();
 
   freeaddrinfo(servinfo);
 
@@ -123,6 +137,7 @@ int main(int argc, char *argv[])
   int response;
   response = recvfrom(sockfd, &buf, sizeof(buf), 0, 
           (struct sockaddr *)&sender, &sendsize);
+  stop();
   char* yes = (char*)buf;
   printf("Response ID: %d\n", buf[1]);
   printf("Response: ");
@@ -142,3 +157,4 @@ int main(int argc, char *argv[])
   close(sockfd);
   return 0;
 }
+

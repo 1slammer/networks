@@ -110,6 +110,7 @@ public class ClientTCP
       //Send the packet. NOTE we may need to add a '\n' to packet for servers to process the end of our packet correctly
       stream.write(data);
       stream.flush();
+      long startTime = System.nanoTime();
       System.out.println("\nData has been sent...\n");
 
       //Set up input stream for server response
@@ -121,6 +122,9 @@ public class ClientTCP
       byte sizeOfResponse = (byte)is.read();
       byte[] response = new byte[sizeOfResponse - 1];
       is.read(response, 0, response.length);
+      long timeElapsed = (System.nanoTime() - startTime) / 1000; // ns to us
+
+      System.out.println("Round Trip Time: " + timeElapsed + " microseconds");
       System.out.println("Response ID: " + response[0]);
       System.out.print("Response: ");
       if (operation == 0x5) {
