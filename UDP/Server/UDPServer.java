@@ -112,6 +112,9 @@ public static void main(String args[]) throws Exception  {
         } else if ((Character.toLowerCase(ch) >= 98) && (Character.toLowerCase(ch) <= 122)){ 
             myBuilder.append(ch);
         }
+        else {
+            myBuilder.append(ch);
+        }
       }
       byte[] newBytes = myBuilder.toString().getBytes();
 
