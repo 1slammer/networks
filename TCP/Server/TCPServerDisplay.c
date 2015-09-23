@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) // _M1
 		}
 
 		inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
-		printf("server: got connection from %s\n", s);
+		//printf("server: got connection from %s\n", s);
 
 		if (!fork())
 		{ // this is the child process
@@ -227,11 +227,11 @@ int main(int argc, char *argv[]) // _M1
 				 unsigned char response[buf[0] - 1];
 				 memset(response, 0, sizeof(response));
 				 response[0] = sizeof(response);
-				 //Test below added by Alex. one line
-				 printf("\nSize of response buffer: %d\n", (int)sizeof(response));
+				 ////Test below added by Alex. one line
+				 //printf("\nSize of response buffer: %d\n", (int)sizeof(response));
 				 response[1] = request;
-				 //Test below added by Alex. one line
-				 printf("\nClient request ID: %d\n", request);
+				 ////Test below added by Alex. one line
+				 //printf("\nClient request ID: %d\n", request);
 				 int x;
 				 for(x = 2; x < sizeof(response); x++)
 				 {
@@ -239,12 +239,12 @@ int main(int argc, char *argv[]) // _M1
 					 response[x] = ch;
 				 }
 
-				 //Test added by Alex. for-loop
-				 int y;
-				 for(y = 0; y < sizeof(response); y++)
-				 {
-					 printf("%c", response[y]);
-				 }
+				 ////Test added by Alex. for-loop
+				 //int y;
+				 //for(y = 0; y < sizeof(response); y++)
+				 //{
+				 //    printf("%c", response[y]);
+				 //}
 
 				 if (send(new_fd, response, sizeof(response), 0) == -1)
 		  			perror("send");
