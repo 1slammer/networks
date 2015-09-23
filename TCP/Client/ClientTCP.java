@@ -121,12 +121,18 @@ public class ClientTCP
       byte sizeOfResponse = (byte)is.read();
       byte[] response = new byte[sizeOfResponse - 1];
       is.read(response, 0, response.length);
-      System.out.println("System response: ");
-      System.out.print(sizeOfResponse + " ");
-      for(byte b : response)
-      {
-         System.out.print(b + " ");
+      System.out.println("Response ID: " + response[0]);
+      System.out.print("Response: ");
+      if (operation == 0x5) {
+          System.out.print((int)response[1]);
       }
+      else {
+          for(byte b : response)
+          {
+             System.out.print((char)b);
+          }
+      }
+      System.out.println();
 
     }
     catch(Exception e)
@@ -209,13 +215,5 @@ public class ClientTCP
     return ret;
 
   }
-
-
-
-
-
-
-
-
-
 }
+
