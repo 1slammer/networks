@@ -79,12 +79,12 @@ public static void main(String args[]) throws Exception  {
       for(int x = 3; x < length; x++) {
         char ch = (char) data[x];
         System.out.println("Data msg data char: " + ch);
-        if (ch == 'a' || ch == 'e' || ch == 'i' || 
-                                    ch == 'o' || ch == 'u')
+        if (Character.toLowerCase(ch) == 'a' || Character.toLowerCase(ch) == 'e' || Character.toLowerCase(ch) == 'i' || 
+                                    Character.toLowerCase(ch) == 'o' || Character.toLowerCase(ch) == 'u')
                     {
                         //do nothing
                     }
-                    else
+                    else if((ch >= 98) && (ch <= 122))
                     { 
                         numConsonants++;
                     }
@@ -108,9 +108,9 @@ public static void main(String args[]) throws Exception  {
       for(int x = 3; x < length; x++) {
         char ch = (char) data[x];
         
-        if (ch == 'a' || ch == 'e' || ch == 'i' || ch == 'o' || ch == 'u') {
+        if (Character.toLowerCase(ch) == 'a' || Character.toLowerCase(ch) == 'e' || Character.toLowerCase(ch) == 'i' || Character.toLowerCase(ch) == 'o' || Character.toLowerCase(ch) == 'u') {
             //do nothing
-        } else { 
+        } else if ((ch >= 98) && (ch <= 122)){ 
             myBuilder.append(ch);
         }
       }
