@@ -2,9 +2,9 @@
 
 all: prog run
 
-prog: TCPServerDisplay.c
-	gcc -o tcp.out TCPServerDisplay.c
+prog: ServerTCP.c
+	gcc -o ServerTCP.out ServerTCP.c
 
-run: tcp.out
-	./tcp.out 10019
+run: ServerTCP.out
+	./ServerTCP.out 10019
 
