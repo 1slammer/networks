@@ -10,9 +10,9 @@ FILE=
 .java.class:
 	$(JC) $(FLAGS) $*.java
 CLASSES = \
-	UDPServer.java
+	ServerUDP.java
 
-MAIN = UDPServer
+MAIN = ServerUDP
 
 default: classes
 classes: $(CLASSES:.java=.class)

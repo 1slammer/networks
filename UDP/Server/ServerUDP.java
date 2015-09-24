@@ -3,7 +3,7 @@ import java.net.*;
 import java.util.*; 
 
 
-class UDPServer {
+class ServerUDP {
 
 public static void main(String args[]) throws Exception  { 
 	DatagramSocket serverSocket;
