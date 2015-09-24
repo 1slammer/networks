@@ -18,7 +18,7 @@ default: classes
 classes: $(CLASSES:.java=.class)
 
 run: classes
-	$(JVM) $(MAIN) self tux188 10019 5 "Hello There!"
+	$(JVM) $(MAIN) tux183 10019 5 "Hello There!"
 
 clean:
 	$(RM) *.class

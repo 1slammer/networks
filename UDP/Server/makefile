@@ -18,7 +18,7 @@ default: classes
 classes: $(CLASSES:.java=.class)
 
 run: classes
-	$(JVM) $(MAIN)
+	$(JVM) $(MAIN) 10019
 
 clean:
 	$(RM) *.class

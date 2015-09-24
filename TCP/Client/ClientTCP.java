@@ -13,7 +13,6 @@ import java.net.*;
 public class ClientTCP
 {
 
-	private static String clientName;       //Name of client machine or username
 	private static int port;                //Port for the server
 	private static InetAddress address;     //Address of the server
 	private static byte operation;           //Operation request number
@@ -27,22 +26,22 @@ public class ClientTCP
 
 	/*
 		Terminal use is as follows:
-		java ClientTCP <clientName> <serverName> <portNum> <operation> <message>
-                        args[0]      args[1]      args[2]   args[3]     args[4]
+		java ClientTCP <serverName> <portNum> <operation> <message>
+                        args[1]      args[2]   args[3]     args[4]
 	*/
 	public static void main(String[] args)
 	{
 
 		//User input error checking
-		if (args.length != 5)
+		if (args.length != 4)
 		{
-			System.out.println("\n\nInput the correct usage: <clientName> "
-				   + "<serverName> <portNumber> <operation> <message>\n");
+			System.out.println("\n\nCorrect Usage:\njava program <server> "
+				   + "<portNumber> <operation> <message>\n");
 			return;
-		}
+		} 
 		//First part of setting the size of the data to be sent to the server. 
 		//And checking input error
-		messageSize = args[4].length();
+		messageSize = args[3].length();
 		if(messageSize > 252)
 		{
 			System.out.println("\n\nYou message must be less than or equal to "
@@ -50,13 +49,10 @@ public class ClientTCP
 			return;
 		}
 
-		//Set client's Name
-		clientName = args[0];
-
 		//Set the Server Inet Address
 		try
 		{
-			address = InetAddress.getByName(args[1]);
+			address = InetAddress.getByName(args[0]);
 		}
 		catch(UnknownHostException e)
 		{
@@ -75,7 +71,7 @@ public class ClientTCP
 		//Set port number of server to client's field variable
 		try
 		{
-			port = Integer.parseInt(args[2]);
+			port = Integer.parseInt(args[1]);
 		}
 		catch(NumberFormatException e)
 		{
@@ -86,7 +82,7 @@ public class ClientTCP
 		//Set operation value
 		try
 		{
-			operation = (byte)Integer.parseInt(args[3]);
+			operation = (byte)Integer.parseInt(args[2]);
 		}
 		catch(NumberFormatException e)
 		{
@@ -101,7 +97,7 @@ public class ClientTCP
 		byte[] data = new byte[dataSize];
 
 		//Set up the packet to be sent to server
-		message = args[4].toCharArray();
+		message = args[3].toCharArray();
 		data = packetSetUp(message);
 
 
@@ -158,11 +154,6 @@ public class ClientTCP
 
 
 	}//end main
-	/*  Returns the client's Name */
-	private static String getClientName()
-	{
-		return clientName;
-	}
 
 	/* Return the port number   */
 	private static int getPortNumber()
