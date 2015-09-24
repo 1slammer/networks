@@ -2,9 +2,9 @@
 
 all: prog run
 
-prog: UDP-Client.c
-	gcc -o udp.out UDP-Client.c
+prog: ClientUDP.c
+	gcc -o ClientUDP.out ClientUDP.c
 
-run: udp.out
-	./udp.out tux183 10019 5 Hello
+run: ClientUDP.out
+	./ClientUDP.out tux183 10019 5 Hello
 
