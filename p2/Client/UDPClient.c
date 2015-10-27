@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	*/
 	if(!(argc >= 5))
 	{
-		fprintf(stderr, "\nusage error: UDPClientProgName, Servername, port#, requestID, hostname1, hostname2, ..., hostnameX\n");
+		fprintf(stderr, "\nusage error: argc = %d\tUDPClientProgName, Servername, port#, requestID, hostname1, hostname2, ..., hostnameX\n", argc);
 		exit(1);
 	}
 
@@ -42,7 +42,15 @@ int main(int argc, char *argv[])
 	char* requestID = argv[3];
 
 	//Get all the hostnames
-	int amtOfHostnames = argc - 4;
+	int amtOfHostnames = argc - 4;				//minus 4 bc command line takes 4 arguments before listing the hostnames
+	char listOfHostNames[amtOfHostnames][32];
+	int host;
+	for(host = 0; host < amtOfHostnames; host++)
+	{
+		//printf("\nHost %d: %s\n", host, argv[host+4]);
+		listOfHostNames[host][0] = argv[host+4];
+	}
+
 
 	/*Some UDP set up stuff*/
 	memset(&hints, 0, sizeof hints);
@@ -131,6 +139,7 @@ int main(int argc, char *argv[])
 	}
 	return ID;
 }
+
 
 
 
