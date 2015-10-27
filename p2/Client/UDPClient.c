@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 
 	//Get all the hostnames
 	int amtOfHostnames = argc - 4;				//minus 4 bc command line takes 4 arguments before listing the hostnames
-	char listOfHostNames[amtOfHostnames][32];
+	char listOfHostNames[amtOfHostnames][64];	//I anticipate a website name being no longer than 64 characters
 	//Get the sizes of each hostname
 	char sizeOfEachHostName[amtOfHostnames][1];
 	int host;
