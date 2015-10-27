@@ -44,11 +44,15 @@ int main(int argc, char *argv[])
 	//Get all the hostnames
 	int amtOfHostnames = argc - 4;				//minus 4 bc command line takes 4 arguments before listing the hostnames
 	char listOfHostNames[amtOfHostnames][32];
+	//Get the sizes of each hostname
+	char sizeOfEachHostName[amtOfHostnames][1];
 	int host;
 	for(host = 0; host < amtOfHostnames; host++)
 	{
-		//printf("\nHost %d: %s\n", host, argv[host+4]);
+		//printf("\nHost %d: %s\tLength: %d\n", host, argv[host+4], strlen(argv[host+4]));
 		listOfHostNames[host][0] = argv[host+4];
+		sizeOfEachHostName[host][0] = strlen(argv[host+4]);
+		//printf("\n\tSize check in array: %d\n\n", sizeOfEachHostName[host][0]);
 	}
 
 
