@@ -11,6 +11,8 @@
 
 #define SERVERPORT "10019"  // the port users will be connecting to
 
+int checkRequestIDRange(int ID);
+
 int main(int argc, char *argv[])
 {
 	int sockfd;
@@ -23,12 +25,24 @@ int main(int argc, char *argv[])
 	  It should be UDPClient Servername Port# requestID hostname1 hostname2 ... hostnameX
 	  See assignment paper for details
 	*/
+	if(!(argc >= 5))
+	{
+		fprintf(stderr, "\nusage error: UDPClientProgName, Servername, port#, requestID, hostname1, hostname2, ..., hostnameX\n");
+		exit(1);
+	}
 
+	//Get the server name
+	char* serverName = argv[1];
 
+	//Get Port Number
+	char* portNumber = argv[2];
 
+	//get Request ID
+	checkRequestIDRange(atoi(argv[3]));
+	char* requestID = argv[3];
 
-
-
+	//Get all the hostnames
+	int amtOfHostnames = argc - 4;
 
 	/*Some UDP set up stuff*/
 	memset(&hints, 0, sizeof hints);
@@ -96,23 +110,27 @@ int main(int argc, char *argv[])
 	.
 	.
 	hostname3 \t IP Address \n
+	*/
 
 
 
 
+ }
 
-
-
-
-
-
-
-
-
-
-
-
-
+ int checkRequestIDRange(int ID)
+{
+	if(ID < 0)
+	{
+		fprintf(stderr, "\nRequest ID must be in range of 0 to 127 inclusive\n");
+		exit(1);
+	}
+	if(ID > 127)
+	{
+		fprintf(stderr, "\nRequest ID must be in range of 0 to 127 inclusive\n");
+		exit(1);
+	}
+	return ID;
+}
 
 
 
