@@ -51,18 +51,37 @@ class Server():
 	def checkMagicNumber(request):
 		# Valid magic number is 0x1234
 		# Magic number field is the first 2 bytes of the request
-		pass
+		if request[0:1] == 0x1234:
+			return True
+		else return false
 
 	def checkChecksum(request):
 		# Valid checksum adds up to -1 (0xff)
 		# Checksum field is the 5th byte of the request
-		pass
+    for i in range(0,len(request)):
+      sum += ord(request[i]) & 0xFF
+   
+    while (sum >> 8) > 0:
+        sum = (sum & 0xFF) + (sum >> 8)
+
+    # one's complement the result
+    sum = ~sum
+
+    if sum & 0xFF == 0:
+    	return True
+    else return False
+
 
 	def checkLength(request):
 		# Valid total message length field is equal to request length
 		# Total message length is the 3-4 bytes of the request
-		pass
-
+		length = len(request)
+		# My initial thought was to do this, but I'm not sure if the len() function will accept
+		# a list like this.
+		if length == len(request[2:3], 16):
+		#if length == int(request[2], 16) + int(request[3], 16):
+			return True
+		return False
 
 
 	def generateValidRequestResponse(request):
@@ -73,7 +92,47 @@ class Server():
 		#			Checksum here is calculated on the response datagram 
 		#	2.IP Addresses of all hostnames, one after another
 		#		In same order as hostnames
-		pass
+		ipAddresses = getIPAddresses(request)
+		ipBytes = bytearray(ipAddresses, "utf-8")
+		returnData = bytearray()
+		returnData[:1] = 0x1234
+		lengthMsg = 7 + len(ipBytes)
+		returnData[2:3] = bytes(lengthMsg)
+		returnData[5] = bytes(9)
+		returnData[6] = 0x01
+		returnData[7:lengthMsg] = ipBytes
+		returnData[4] = calculateCheckSum(returnData)
+
+
+	def getIPAddresses(request):
+		firstLen = request[7]
+		x = 7
+		ipAddresses = list()
+		for x in range(7, len(request), firstLen):
+			hostname = request[x:firstLen]
+			addr = socket.gethostbyname(hostname)
+			ipAddresses.append(addr)
+			x = firstLen + x + 1
+			firstLen = request[x - 1]
+		return ipAddresses
+
+
+	def calculateCheckSum(request):
+		""" Compute the Internet Checksum of the supplied data.  The checksum is
+    initialized to zero.  Place the return value in the checksum field of a
+    packet.  When the packet is received, check the checksum, by passing
+    in the checksum field of the packet and the data.  If the result is zero,
+    then the checksum has not detected an error.
+    """
+    for i in range(0,len(request)):
+      sum += ord(request[i]) & 0xFF
+    while (sum >> 8) > 0:
+        sum = (sum & 0xFF) + (sum >> 8)
+
+    # one's complement the result
+    sum = ~sum
+
+    return sum & 0xFF
 
 	def generateInvalidRequestResponse(request):
 		# Return a message with the following pieces in order:
