@@ -3,16 +3,17 @@ import java.net.*;
 import java.util.*; 
 
 
-class UDPServer {
+class ServerUDP {
 
 public static void main(String args[]) throws Exception  { 
 	DatagramSocket serverSocket;
-	if (args.length > 0) {
-		serverSocket = new DatagramSocket(Integer.parseInt(args[0]));
+	if (args.length != 1) {
+		System.out.println("\n\nCorrect Usage:\njava program <port>");
+		return;
 	}
-	else {
-		serverSocket = new DatagramSocket(10019);
-	}                     
+
+	serverSocket = new DatagramSocket(Integer.parseInt(args[0]));
+
 	byte[] receiveData = new byte[256];                          
 	while(true) {                   
 		DatagramPacket receivePacket = new DatagramPacket(receiveData, 

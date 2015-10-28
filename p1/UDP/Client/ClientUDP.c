@@ -46,17 +46,16 @@ int main(int argc, char *argv[])
 	int rv;
 	int numbytes;
 
-	if (argc != 6) {
-		fprintf(stderr,"usage: client servername PortNumber Operation String\n");
+	if (argc != 5) {
+		fprintf(stderr,"usage: ./prog servername PortNumber Operation String\n");
 		exit(1);
 	}
 
 	char* progName = argv[0];
-	char* clientName = argv[1];
-	char* serverName = argv[2];
-	char* portNumber = argv[3];
-	char* operation = argv[4];
-	char* msgString = argv[5];
+	char* serverName = argv[1];
+	char* portNumber = argv[2];
+	char* operation = argv[3];
+	char* msgString = argv[4];
 
 	// Convert character of integer from command line parameter to a
 	// hex value in char*

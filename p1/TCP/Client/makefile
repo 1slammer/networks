@@ -10,15 +10,15 @@ FILE=
 .java.class:
 	$(JC) $(FLAGS) $*.java
 CLASSES = \
-	UDPServer.java
+	ClientTCP.java
 
-MAIN = UDPServer
+MAIN = ClientTCP
 
 default: classes
 classes: $(CLASSES:.java=.class)
 
 run: classes
-	$(JVM) $(MAIN)
+	$(JVM) $(MAIN) tux183 10019 5 "Hello There!"
 
 clean:
 	$(RM) *.class
