@@ -155,20 +155,25 @@ int main(int argc, char *argv[])
 			return 2;
 	}
 
-	freeaddrinfo(servinfo);
 	/*End of some UDP stuff*/
 
-	/*Obatin the hostnames from the command line arguments and get the 
-	request ID. See assignment for details on how the message array should 
-	be contructed
-	*/
 
+	/*Send the message to the Server*/
+	if ((numbytes = sendto(sockfd, &message, message.TML, 0,
+		p->ai_addr, p->ai_addrlen)) == -1)
+	{
+		perror("talker: sendto");
+		exit(1);
+	}
+	freeaddrinfo(servinfo);
 
+	char buf[1024];
+	struct sockaddr_storage sender;
+	socklen_t sendsize = sizeof(sender);
 
-
-
-
-
+	int response;
+	response = recvfrom(sockfd, &buf, sizeof(buf), 0, (struct sockaddr *)&sender, &sendsize);
+	
 
 
 
