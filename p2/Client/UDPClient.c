@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
 
 	//get Request ID
 	checkRequestIDRange(atoi(argv[3]));
-	message.requestID = argv[3];
+	message.requestID = atoi(argv[3]);
 
 	//Get all the hostnames
 	int amtOfHostNames = argc - 4;
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 	{
 		char *hostName = argv[host+4];
 		sizeOfHostNames[host] = (char) strlen(hostName);
-		printf("Added host name %s\t\t\tSize of Hostname: %d\n", hostName, sizeOfHostNames[host]);
+		printf("Added host name %s\t\t\t\tSize of Hostname: %d\n", hostName, sizeOfHostNames[host]);
 		listOfHostNames[host] = hostName;
 		
 	}
@@ -75,8 +75,8 @@ int main(int argc, char *argv[])
 	int idx = 0;
 	for(host = 0; host <amtOfHostNames; host++)
 	{
-		printf("Index at %d", idx);
-		message.data[idx] = sizeOfHostNames[host];
+		printf("Index at %d\n", idx);
+		message.data[idx] = (char)sizeOfHostNames[host];
 		idx++;
 		int i;
 		for(i = 0; i < sizeOfHostNames[host]; i++)
@@ -90,9 +90,41 @@ int main(int argc, char *argv[])
 	host = 0;
 	while(message.data[host] != '\0')
 	{
-		printf("%c", message.data[host]);
+		printf("ASCHII NUM: %d \tCharAt %d: %c\n", message.data[host], host, message.data[host]);
 		host++;
 	}
+	printf("\n");
+
+	printf("Size of Struct: %lu\n", sizeof(message));
+	
+	/*Calculate the Total message length TML*/
+	int totalHostNameLength = 0;
+	for(host = 0; host < amtOfHostNames; host++)
+	{
+		totalHostNameLength += sizeOfHostNames[host];
+		totalHostNameLength++;
+	}
+
+	printf("Total of all host names length: %d\n", totalHostNameLength);
+
+	totalHostNameLength += 7;
+	message.TML = totalHostNameLength;
+
+	
+	/*Calculate the checksume*/
+	char *ptr = (char*)&message;
+	int index;
+	short sum;
+	for(index = 0; index < totalHostNameLength; index++)
+	{
+		printf("Thing: %d\t", (short) *(ptr + index));
+		sum = sum + (short) *(ptr + index);
+		sum = (sum & 0xFF) + (sum >>8);
+		printf("Sum at index %d: %d\n", index, sum);
+	}
+	message.checksum = ~sum;
+	printf("\n\nThe checksum is: %d", message.checksum);
+
 
 	/*Some UDP set up stuff*/
 	memset(&hints, 0, sizeof hints);
@@ -181,6 +213,7 @@ int main(int argc, char *argv[])
 	}
 	return ID;
 }
+
 
 
 
