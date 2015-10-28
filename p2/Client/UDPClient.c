@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	*/
 	if(!(argc >= 5))
 	{
-		fprintf(stderr, "\nusage error: argc = %d\tUDPClientProgName, Servername, port#, requestID, hostname1, hostname2, ..., hostnameX\n", argc);
+		fprintf(stderr, "\nusage error: argc = %d\tUDPClient, Servername, port#, requestID, hostname1, hostname2, ..., hostnameX\n", argc);
 		exit(1);
 	}
 
