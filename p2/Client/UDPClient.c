@@ -10,6 +10,7 @@
 #include <netdb.h>
 
 #define SERVERPORT "10019"  // the port users will be connecting to
+#define GID (char)11019
 
 int checkRequestIDRange(int ID);
 
@@ -19,7 +20,6 @@ int main(int argc, char *argv[])
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
 	int numbytes;
-
 
 	/*Check for correct terminal usage for this program. 
 	  It should be UDPClient Servername Port# requestID hostname1 hostname2 ... hostnameX
@@ -49,10 +49,10 @@ int main(int argc, char *argv[])
 	int host;
 	for(host = 0; host < amtOfHostnames; host++)
 	{
-		//printf("\nHost %d: %s\tLength: %d\n", host, argv[host+4], strlen(argv[host+4]));
+		printf("\nHost %d: %s\tLength: %d\tMemory size of length variable: %lu\n", host, argv[host+4], strlen(argv[host+4]), sizeof((char)strlen(argv[host+4])));
 		listOfHostNames[host][0] = argv[host+4];
-		sizeOfEachHostName[host][0] = strlen(argv[host+4]);
-		//printf("\n\tSize check in array: %d\n\n", sizeOfEachHostName[host][0]);
+		sizeOfEachHostName[host][0] = (char)strlen(argv[host+4]);
+		printf("\n\tSize check in array: %d\n\n", sizeOfEachHostName[host][0]);
 	}
 
 
