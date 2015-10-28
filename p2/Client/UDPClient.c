@@ -10,9 +10,19 @@
 #include <netdb.h>
 
 #define SERVERPORT "10019"  // the port users will be connecting to
-#define GID (char)11019
+
 
 int checkRequestIDRange(int ID);
+struct msg
+{
+	unsigned short magicNumber;
+	unsigned short TML;
+	char checksum;
+	char GID;
+	char requestID;
+	unsigned char data[1024];
+} __attribute__((__packed__));
+typedef struct msg msg_t;
 
 int main(int argc, char *argv[])
 {
@@ -31,6 +41,11 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	//Initialize struct
+	msg_t message;
+	message.magicNumber = 0x1234;
+	message.GID = 9;
+
 	//Get the server name
 	char* serverName = argv[1];
 
@@ -39,22 +54,45 @@ int main(int argc, char *argv[])
 
 	//get Request ID
 	checkRequestIDRange(atoi(argv[3]));
-	char* requestID = argv[3];
+	message.requestID = argv[3];
 
 	//Get all the hostnames
-	int amtOfHostnames = argc - 4;				//minus 4 bc command line takes 4 arguments before listing the hostnames
-	char listOfHostNames[amtOfHostnames][64];	//I anticipate a website name being no longer than 64 characters
-	//Get the sizes of each hostname
-	char sizeOfEachHostName[amtOfHostnames][1];
+	int amtOfHostNames = argc - 4;
+	char *listOfHostNames[amtOfHostNames];
+	char sizeOfHostNames[amtOfHostNames];
+	
 	int host;
-	for(host = 0; host < amtOfHostnames; host++)
+	for(host = 0; host < amtOfHostNames; host++)
 	{
-		printf("\nHost %d: %s\tLength: %d\tMemory size of length variable: %lu\n", host, argv[host+4], strlen(argv[host+4]), sizeof((char)strlen(argv[host+4])));
-		listOfHostNames[host][0] = argv[host+4];
-		sizeOfEachHostName[host][0] = (char)strlen(argv[host+4]);
-		printf("\n\tSize check in array: %d\n\n", sizeOfEachHostName[host][0]);
+		char *hostName = argv[host+4];
+		sizeOfHostNames[host] = (char) strlen(hostName);
+		printf("Added host name %s\t\t\tSize of Hostname: %d\n", hostName, sizeOfHostNames[host]);
+		listOfHostNames[host] = hostName;
+		
 	}
 
+	
+	int idx = 0;
+	for(host = 0; host <amtOfHostNames; host++)
+	{
+		printf("Index at %d", idx);
+		message.data[idx] = sizeOfHostNames[host];
+		idx++;
+		int i;
+		for(i = 0; i < sizeOfHostNames[host]; i++)
+		{
+			message.data[idx+i] = listOfHostNames[host][i]; 
+		}	 	
+		idx += sizeOfHostNames[host];
+	}
+	
+	printf("\n");
+	host = 0;
+	while(message.data[host] != '\0')
+	{
+		printf("%c", message.data[host]);
+		host++;
+	}
 
 	/*Some UDP set up stuff*/
 	memset(&hints, 0, sizeof hints);
