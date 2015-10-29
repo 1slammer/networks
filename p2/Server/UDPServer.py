@@ -12,7 +12,7 @@ class Server():
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         # Bind the socket to the port
-        server_address = ('localhost', portNum)
+        server_address = (socket.gethostname(), portNum)
         print >> sys.stderr, 'starting up on %s port %s' % server_address
         self.sock.bind(server_address)
         
