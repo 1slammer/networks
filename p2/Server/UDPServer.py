@@ -72,12 +72,13 @@ class Server():
     def checkLength(self, request):
         # Valid total message length field is equal to request length
         # Total message length is the 3-4 bytes of the request
-        length = len(request)
+        length = len(request) / 2
+        print length
         # My initial thought was to do this, but I'm not sure if the len() function will accept
         # a list like this.
-        strlength = str(request[2:4])
-        lengthIn = request[2] + request[3]
-        if length == request[2] + request[3]:
+        strlength = int(request[4:8], 16)
+        print strlength
+        if length == strlength:
             return True
         return False
 
@@ -142,7 +143,6 @@ class Server():
         #            bad magic number: b2 = 1
         pass
         
-  
 
   
 
