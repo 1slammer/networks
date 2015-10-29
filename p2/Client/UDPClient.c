@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 	freeaddrinfo(servinfo);
 
 
-	char buf[1024];
+	unsigned char buf[1024];
 	struct sockaddr_storage sender;
 	socklen_t sendsize = sizeof(sender);
 
@@ -181,17 +181,53 @@ int main(int argc, char *argv[])
 	
 
 
+	printf("\n\n\n");
 
 
 	/*Upon recieveing the message from the server see if it's
 	a "VALID" message. See assignment for details.
 	*/
 
+	printf("response");
+	int i = 0;
+	for (i = 0; i < response; i++) {
+		printf("%c\t", buf[i]);
+	}
+	printf("%d", response);
 
+	printf("\n\n\n");
+	printf("buf %x", buf[0]);
+	printf("buf %x", buf[1]);
+	printf("buf %x", buf[2]);
+	printf("buf %x", buf[3]);
 
+	if (buf[0] == 0x12 && buf[1] == 0x34) {
+		printf("Valid Magic Number\n");
+	}
 
+	short TML = buf[2] << 8 | buf[3];
+	printf("TML %x\n", TML);
 
+	if (TML == response) {
+		printf("Valid Length\n");
+	}
 
+	*ptr = (char*)&buf;
+	short checksum = 0;
+	for (i = 0; i < response; i++ ) {
+		printf("checksum %x\n", checksum);
+		printf("added value %x\n", (short) *(ptr + i));
+		printf("buf %x\n", buf[i]);
+		//checksum += (short) *(ptr + i);
+		checksum += buf[i];
+		checksum = (checksum & 0xFF) + (checksum >> 8);
+		printf("checksum %x\n", checksum);
+	}
+	printf("checksum %x", checksum);
+
+	if (checksum == 0xFF) {
+		printf("Valid Checksum\n");
+	}
 
 
 	/*With a "valid" essage print out the hostname and IP address
@@ -203,6 +239,21 @@ int main(int argc, char *argv[])
 	.
 	hostname3 \t IP Address \n
 	*/
+	int ip = 0;
+	int numberOfIP = (response - 7)/4;
+	printf("response: %d", response);
+	printf("number ip: %d", numberOfIP);
+	int j = 0;
+	int k = 0;
+	for (j = 0; j<numberOfIP; j++) {
+		printf("\n%s\t", listOfHostNames[j]);
+		for (k=0; k<4; k++) {
+			printf("%d", buf[7+k+j*4]);
+			if (k != 3) {
+				printf(".");
+			}
+		}
+	}
 
 
 
