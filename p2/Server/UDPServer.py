@@ -104,15 +104,19 @@ class Server():
 
 
     def getIPAddresses(self, request):
-        firstLen = request[7]
-        x = 7
-        ipAddresses = list()
-        for x in range(7, len(request), firstLen):
-            hostname = str(request[x:firstLen])
+        firstLen = int(request[12:16], 16) & 0xff
+        x = 16
+        ipAddresses = ""
+        for x in range(16, len(request), firstLen):
+            hostname = request[x:x + firstLen * 2].decode("hex")
+            print hostname
+            print request[16:20].decode("hex")
             addr = socket.gethostbyname(hostname)
-            ipAddresses.append(addr)
+            ipAddresses += addr
             x = firstLen + x + 1
-            firstLen = request[x - 1]
+            if x + 2 > len(request):
+                break
+            firstLen = int(request[x - 2:x + 2], 16) & 0xff
         return ipAddresses
 
 
