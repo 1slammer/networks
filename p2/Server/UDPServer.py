@@ -51,7 +51,7 @@ class Server():
     def checkMagicNumber(self, request):
         # Valid magic number is 0x1234
         # Magic number field is the first 2 bytes of the request
-        if request[0] + request[1] == 70 and request[0] - request[1] < 0:
+        if request[0:4] == "1234":
             return True
         else:
             return False
@@ -60,14 +60,13 @@ class Server():
         # Valid checksum adds up to -1 (0xff)
         # Checksum field is the 5th byte of the request
         sum = 0
-        for i in range(0, len(request)):
-            sum += request[i] & 0xff
+        for i in range(0, len(request), 2):
+            sum += int(request[i:i+2], 16) & 0xff
             sum = (sum & 0xff) + (sum >> 8)
         # one's complement the result
         if sum & 0xff == 0xff:
             return True
         else:
-            print sum
             return False
 
     def checkLength(self, request):
@@ -76,7 +75,7 @@ class Server():
         length = len(request)
         # My initial thought was to do this, but I'm not sure if the len() function will accept
         # a list like this.
-        #if length == int(str(request[2:3]), 10):
+        strlength = str(request[2:4])
         lengthIn = request[2] + request[3]
         if length == request[2] + request[3]:
             return True
