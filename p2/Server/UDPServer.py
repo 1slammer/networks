@@ -107,16 +107,19 @@ class Server():
         firstLen = int(request[12:16], 16) & 0xff
         x = 16
         ipAddresses = ""
-        for x in range(16, len(request), firstLen):
+        for y in range(16, len(request), firstLen):
             hostname = request[x:x + firstLen * 2].decode("hex")
             print hostname
-            print request[16:20].decode("hex")
+            #print request[16:20].decode("hex")
             addr = socket.gethostbyname(hostname)
             ipAddresses += addr
-            x = firstLen + x + 1
+            x = firstLen * 2 + x
+            print x
             if x + 2 > len(request):
                 break
             firstLen = int(request[x - 2:x + 2], 16) & 0xff
+            x = x + 2
+            print firstLen
         return ipAddresses
 
 
@@ -147,7 +150,6 @@ class Server():
         #            bad magic number: b2 = 1
         pass
         
-
   
 
 
