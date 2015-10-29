@@ -91,10 +91,12 @@ int main(int argc, char *argv[])
 	message.request_id = 1;
 	message.operation = *operation;
 	int i;
-	for (i=0; i<strlen(msgString); i++)
+	for (i=0; i<strlen(msgString); i++) {
 		message.data[i] = msgString[i];
-		message.size = sizeof(message.request_id) + sizeof(message.operation)
-			+ strlen(msgString) + sizeof(message.size);
+	}
+
+	message.size = sizeof(message.request_id) + sizeof(message.operation)
+		+ strlen(msgString) + sizeof(message.size);
 
 	if ((numbytes = sendto(sockfd, &message, message.size, 0,
 		p->ai_addr, p->ai_addrlen)) == -1)
