@@ -10,6 +10,7 @@ class Server():
     def setup(self, portNum):
         # Create a UDP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.code = 0
 
         # Bind the socket to the port
         server_address = (socket.gethostname(), portNum)
@@ -30,7 +31,7 @@ class Server():
                 if valid:
                     response = self.generateValidRequestResponse(request)
                 else:
-                    response = self.generateInvalidRequestResponse(request)
+                    response = self.generateInvalidRequestResponse(request, self.code)
 
                 sent = self.sock.sendto(response, address)
                 print >>sys.stderr, 'sent %s bytes back to %s' % (sent, address)
@@ -54,6 +55,7 @@ class Server():
         if request[0:4] == "1234":
             return True
         else:
+            self.code = 3
             return False
 
     def checkChecksum(self, request):
@@ -67,6 +69,7 @@ class Server():
         if sum & 0xff == 0xff:
             return True
         else:
+            self.code = 2
             return False
 
     def checkLength(self, request):
@@ -78,6 +81,7 @@ class Server():
         strlength = int(request[4:8], 16)
         if length == strlength:
             return True
+        self.code = 1
         return False
 
 
@@ -100,7 +104,7 @@ class Server():
         returnData[1] = 0x34
         returnData[2] = x[0]
         returnData[3] = x[1]
-        returnData[5] = bytes(9)
+        returnData[5] = 0x09
         returnData[6] = 0x01
         returnData[7:lengthMsg] = ipBytes
         returnData[4] = self.calculateCheckSum(returnData)
@@ -139,7 +143,7 @@ class Server():
         sum = ~sum
         return sum & 0xff
 
-    def generateInvalidRequestResponse(self, request):
+    def generateInvalidRequestResponse(self, request, code):
         # Return a message with the following pieces in order:
         #     1.Header
         #         (magic number total message length, checksum, group ID)
@@ -149,7 +153,20 @@ class Server():
         #              bad length: b0 = 1
         #             bad checksum: b1 = 1
         #             bad magic number: b2 = 1
-        pass
+        lengthMsg = 7
+        returnData = bytearray(lengthMsg)
+        returnData[0] = 0x12
+        returnData[1] = 0x34
+        returnData[2] = 0x00
+        returnData[3] = 0x07
+        returnData[5] = 0x09
+        if code == 1:
+            returnData[6] = 0x01
+        if code == 2:
+            returnData[6] = 0x02
+        if code == 3:
+            returnData[6] = 0x04
+        return returnData
     
 
     def intToBytes(self, n):
@@ -180,4 +197,3 @@ if __name__ == '__main__':
         sys.exit()
 
     main(portNum)
-
