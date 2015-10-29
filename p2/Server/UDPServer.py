@@ -123,8 +123,8 @@ class Server():
     then the checksum has not detected an error.
     """
         sum = 0
-        for i in range(0,len(request)):
-            sum += request[i] & 0xff
+        for i in range(0,len(request), 2):
+            sum += int(request[i:i+2], 16) & 0xff
             sum = (sum & 0xff) + (sum >> 8)
         # one's complement the result
         sum = ~sum
@@ -143,7 +143,6 @@ class Server():
         pass
         
   
-
 
   
 
