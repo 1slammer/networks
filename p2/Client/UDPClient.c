@@ -117,10 +117,10 @@ int main(int argc, char *argv[])
 	short sum;
 	for(index = 0; index < totalHostNameLength; index++)
 	{
-		printf("Thing: %d\t", (short) *(ptr + index));
+		//printf("Thing: %d\t", (short) *(ptr + index));
 		sum = sum + (short) *(ptr + index);
 		sum = (sum & 0xFF) + (sum >>8);
-		printf("Sum at index %d: %d\n", index, sum);
+		//printf("Sum at index %d: %d\n", index, sum);
 	}
 	message.checksum = ~sum;
 	printf("\n\nThe checksum is: %d", message.checksum);
@@ -157,6 +157,10 @@ int main(int argc, char *argv[])
 
 	/*End of some UDP stuff*/
 
+	// Put magicNumber and TML into network byte order (Big Endian)
+	message.magicNumber = htons(message.magicNumber);
+	message.TML = htons(message.TML);
+
 
 	/*Send the message to the Server*/
 	if ((numbytes = sendto(sockfd, &message, message.TML, 0,
@@ -166,6 +170,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	freeaddrinfo(servinfo);
+
 
 	char buf[1024];
 	struct sockaddr_storage sender;
