@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 	host = 0;
 	while(message.data[host] != '\0')
 	{
-		printf("ASCHII NUM: %d \tCharAt %d: %c\n", message.data[host], host, message.data[host]);
+		//printf("ASCHII NUM: %d \tCharAt %d: %c\n", message.data[host], host, message.data[host]);
 		host++;
 	}
 	printf("\n");
@@ -126,107 +126,147 @@ int main(int argc, char *argv[])
 	printf("\n\nThe checksum is: %d", message.checksum);
 
 
-	/*Some UDP set up stuff*/
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_DGRAM;
 
-	if ((rv = getaddrinfo(serverName, portNumber, &hints, &servinfo)) != 0) 
-	{
-		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-		return 1;
-	}
 
-	// loop through all the results and make a socket
-	for(p = servinfo; p != NULL; p = p->ai_next) 
-	{
-		if ((sockfd = socket(p->ai_family, p->ai_socktype,
-			p->ai_protocol)) == -1) 
-		{
-			perror("talker: socket");
-			continue;
-		}
-
-		break;
-	}
-
-	if (p == NULL) {
-		fprintf(stderr, "talker: failed to create socket\n");
-			return 2;
-	}
-
-	/*End of some UDP stuff*/
 
 	// Put magicNumber and TML into network byte order (Big Endian)
 	message.magicNumber = htons(message.magicNumber);
 	message.TML = htons(message.TML);
 
 
-	/*Send the message to the Server*/
-	if ((numbytes = sendto(sockfd, &message, message.TML, 0,
-		p->ai_addr, p->ai_addrlen)) == -1)
-	{
-		perror("talker: sendto");
-		exit(1);
-	}
-	freeaddrinfo(servinfo);
-
-
-	unsigned char buf[1024];
-	struct sockaddr_storage sender;
-	socklen_t sendsize = sizeof(sender);
-
 	int response;
-	response = recvfrom(sockfd, &buf, sizeof(buf), 0, (struct sockaddr *)&sender, &sendsize);
-	
+	unsigned char buf[1024];
+
+	int valid = 0;
+	int resendCount = 0;
+	do
+	{
+
+		/*Some UDP set up stuff*/
+		memset(&hints, 0, sizeof hints);
+		hints.ai_family = AF_UNSPEC;
+		hints.ai_socktype = SOCK_DGRAM;
+
+		if ((rv = getaddrinfo(serverName, portNumber, &hints, &servinfo)) != 0) 
+		{
+			fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+			return 1;
+		}
+
+		// loop through all the results and make a socket
+		for(p = servinfo; p != NULL; p = p->ai_next) 
+		{
+			if ((sockfd = socket(p->ai_family, p->ai_socktype,
+				p->ai_protocol)) == -1) 
+			{
+				perror("talker: socket");
+				continue;
+			}
+
+			break;
+		}
+
+		if (p == NULL) {
+			fprintf(stderr, "talker: failed to create socket\n");
+				return 2;
+		}
+
+		/*End of some UDP stuff*/
 
 
-	printf("\n\n\n");
 
 
-	/*Upon recieveing the message from the server see if it's
-	a "VALID" message. See assignment for details.
-	*/
 
-	printf("response");
-	int i = 0;
-	for (i = 0; i < response; i++) {
-		printf("%c\t", buf[i]);
-	}
-	printf("%d", response);
 
-	printf("\n\n\n");
-	printf("buf %x", buf[0]);
-	printf("buf %x", buf[1]);
-	printf("buf %x", buf[2]);
-	printf("buf %x", buf[3]);
+		/*Send the message to the Server*/
+		if ((numbytes = sendto(sockfd, &message, message.TML, 0,
+			p->ai_addr, p->ai_addrlen)) == -1)
+		{
+			perror("talker: sendto");
+			exit(1);
+		}
+		freeaddrinfo(servinfo);
+		printf("SEND TO FINISHED!!!!\n\n\n\n");
 
-	if (buf[0] == 0x12 && buf[1] == 0x34) {
-		printf("Valid Magic Number\n");
-	}
 
-	short TML = buf[2] << 8 | buf[3];
-	printf("TML %x\n", TML);
+		struct sockaddr_storage sender;
+		socklen_t sendsize = sizeof(sender);
 
-	if (TML == response) {
-		printf("Valid Length\n");
-	}
+		response = recvfrom(sockfd, &buf, sizeof(buf), 0, (struct sockaddr *)&sender, &sendsize);
+		
 
-	*ptr = (char*)&buf;
-	short checksum = 0;
-	for (i = 0; i < response; i++ ) {
-		printf("checksum %x\n", checksum);
-		printf("added value %x\n", (short) *(ptr + i));
-		printf("buf %x\n", buf[i]);
-		//checksum += (short) *(ptr + i);
-		checksum += buf[i];
-		checksum = (checksum & 0xFF) + (checksum >> 8);
-		printf("checksum %x\n", checksum);
-	}
-	printf("checksum %x", checksum);
 
-	if (checksum == 0xFF) {
-		printf("Valid Checksum\n");
+		printf("\n\n\n");
+
+
+		/*Upon recieveing the message from the server see if it's
+		a "VALID" message. See assignment for details.
+		*/
+
+		printf("response");
+		int i = 0;
+		for (i = 0; i < response; i++) {
+			printf("%c\t", buf[i]);
+		}
+		printf("%d", response);
+
+		printf("\n\n\n");
+		printf("buf %x", buf[0]);
+		printf("buf %x", buf[1]);
+		printf("buf %x", buf[2]);
+		printf("buf %x", buf[3]);
+
+		if (buf[0] == 0x12 && buf[1] == 0x34) {
+			printf("Valid Magic Number\n");
+			valid = 1;
+		}
+		else {
+			// resend the message
+			valid = 0;
+			continue;
+		}
+
+
+		short TML = buf[2] << 8 | buf[3];
+		printf("TML %x\n", TML);
+
+		if (TML == response) {
+			printf("Valid Length\n");
+			valid = 1;
+		}
+		else {
+			// resend the message
+			valid = 0;
+			continue;
+		}
+
+		*ptr = (char*)&buf;
+		short checksum = 0;
+		for (i = 0; i < response; i++ ) {
+			printf("checksum %x\n", checksum);
+			printf("added value %x\n", (short) *(ptr + i));
+			printf("buf %x\n", buf[i]);
+			//checksum += (short) *(ptr + i);
+			checksum += buf[i];
+			checksum = (checksum & 0xFF) + (checksum >> 8);
+			printf("checksum %x\n", checksum);
+		}
+		printf("checksum %x", checksum);
+
+		if (checksum == 0xFF) {
+			printf("Valid Checksum\n");
+			valid = 1;
+		}
+		else {
+			// resend the message
+			valid = 0;
+			continue;
+		}
+
+	} while (valid == 0 && resendCount++ < 7);
+
+	if (valid == 0) {
+		exit(77);
 	}
 
 
@@ -254,9 +294,6 @@ int main(int argc, char *argv[])
 			}
 		}
 	}
-
-
-
 
  }
 
