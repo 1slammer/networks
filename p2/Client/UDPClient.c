@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 	{
 		char *hostName = argv[host+4];
 		sizeOfHostNames[host] = (char) strlen(hostName);
-		printf("Added host name %s\t\t\t\tSize of Hostname: %d\n", hostName, sizeOfHostNames[host]);
+		//printf("Added host name %s\t\t\t\tSize of Hostname: %d\n", hostName, sizeOfHostNames[host]);
 		listOfHostNames[host] = hostName;
 		
 	}
@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 	int idx = 0;
 	for(host = 0; host <amtOfHostNames; host++)
 	{
-		printf("Index at %d\n", idx);
+		//printf("Index at %d\n", idx);
 		message.data[idx] = (char)sizeOfHostNames[host];
 		idx++;
 		int i;
@@ -86,16 +86,16 @@ int main(int argc, char *argv[])
 		idx += sizeOfHostNames[host];
 	}
 	
-	printf("\n");
+	//printf("\n");
 	host = 0;
 	while(message.data[host] != '\0')
 	{
 		//printf("ASCHII NUM: %d \tCharAt %d: %c\n", message.data[host], host, message.data[host]);
 		host++;
 	}
-	printf("\n");
+	//printf("\n");
 
-	printf("Size of Struct: %lu\n", sizeof(message));
+	//printf("Size of Struct: %lu\n", sizeof(message));
 	
 	/*Calculate the Total message length TML*/
 	int totalHostNameLength = 0;
@@ -105,25 +105,27 @@ int main(int argc, char *argv[])
 		totalHostNameLength++;
 	}
 
-	printf("Total of all host names length: %d\n", totalHostNameLength);
+	//printf("Total of all host names length: %d\n", totalHostNameLength);
 
 	totalHostNameLength += 7;
 	message.TML = totalHostNameLength;
+
+	message.checksum = 0;
 
 	
 	/*Calculate the checksume*/
 	char *ptr = (char*)&message;
 	int index;
-	short sum;
+	short sum = 0;
 	for(index = 0; index < totalHostNameLength; index++)
 	{
-		//printf("Thing: %d\t", (short) *(ptr + index));
+		//printf("Thing: %x\t", (short) *(ptr + index));
 		sum = sum + (short) *(ptr + index);
 		sum = (sum & 0xFF) + (sum >>8);
 		//printf("Sum at index %d: %d\n", index, sum);
 	}
 	message.checksum = ~sum;
-	printf("\n\nThe checksum is: %d", message.checksum);
+	//printf("\n\nThe checksum is: %d", message.checksum);
 
 
 
@@ -131,6 +133,7 @@ int main(int argc, char *argv[])
 
 	// Put magicNumber and TML into network byte order (Big Endian)
 	message.magicNumber = htons(message.magicNumber);
+	//printf("magic number: %x", message.magicNumber);
 	message.TML = htons(message.TML);
 
 
@@ -141,7 +144,10 @@ int main(int argc, char *argv[])
 	int resendCount = 0;
 	do
 	{
+		message.magicNumber = 0x1234;
 
+		message.magicNumber = htons(message.magicNumber);
+		//printf("magic number: %x", message.magicNumber);
 		/*Some UDP set up stuff*/
 		memset(&hints, 0, sizeof hints);
 		hints.ai_family = AF_UNSPEC;
@@ -179,14 +185,15 @@ int main(int argc, char *argv[])
 
 
 		/*Send the message to the Server*/
-		if ((numbytes = sendto(sockfd, &message, message.TML, 0,
+		if ((numbytes = sendto(sockfd, &message, ntohs(message.TML), 0,
 			p->ai_addr, p->ai_addrlen)) == -1)
 		{
 			perror("talker: sendto");
 			exit(1);
 		}
 		freeaddrinfo(servinfo);
-		printf("SEND TO FINISHED!!!!\n\n\n\n");
+		//printf("tml size thing: %x", message.TML);
+		//printf("SEND TO FINISHED!!!!\n\n\n\n");
 
 
 		struct sockaddr_storage sender;
@@ -196,28 +203,29 @@ int main(int argc, char *argv[])
 		
 
 
-		printf("\n\n\n");
+		//printf("\n\n\n");
 
 
 		/*Upon recieveing the message from the server see if it's
 		a "VALID" message. See assignment for details.
 		*/
 
-		printf("response");
+
+		//printf("response");
 		int i = 0;
 		for (i = 0; i < response; i++) {
-			printf("%c\t", buf[i]);
+			//printf("%c\t", buf[i]);
 		}
-		printf("%d", response);
+		//printf("%d", response);
 
-		printf("\n\n\n");
-		printf("buf %x", buf[0]);
-		printf("buf %x", buf[1]);
-		printf("buf %x", buf[2]);
-		printf("buf %x", buf[3]);
+		//printf("\n\n\n");
+		//printf("buf %x", buf[0]);
+		//printf("buf %x", buf[1]);
+		//printf("buf %x", buf[2]);
+		//printf("buf %x", buf[3]);
 
 		if (buf[0] == 0x12 && buf[1] == 0x34) {
-			printf("Valid Magic Number\n");
+			//printf("Valid Magic Number\n");
 			valid = 1;
 		}
 		else {
@@ -228,10 +236,10 @@ int main(int argc, char *argv[])
 
 
 		short TML = buf[2] << 8 | buf[3];
-		printf("TML %x\n", TML);
+		//printf("TML %x\n", TML);
 
-		if (TML == response) {
-			printf("Valid Length\n");
+		if (TML == response && TML > 7) {
+			//printf("Valid Length\n");
 			valid = 1;
 		}
 		else {
@@ -243,18 +251,18 @@ int main(int argc, char *argv[])
 		*ptr = (char*)&buf;
 		short checksum = 0;
 		for (i = 0; i < response; i++ ) {
-			printf("checksum %x\n", checksum);
-			printf("added value %x\n", (short) *(ptr + i));
-			printf("buf %x\n", buf[i]);
+			//printf("checksum %x\n", checksum);
+			//printf("added value %x\n", (short) *(ptr + i));
+			//printf("buf %x\n", buf[i]);
 			//checksum += (short) *(ptr + i);
 			checksum += buf[i];
 			checksum = (checksum & 0xFF) + (checksum >> 8);
-			printf("checksum %x\n", checksum);
+			//printf("checksum %x\n", checksum);
 		}
-		printf("checksum %x", checksum);
+		//printf("checksum %x", checksum);
 
 		if (checksum == 0xFF) {
-			printf("Valid Checksum\n");
+			//printf("Valid Checksum\n");
 			valid = 1;
 		}
 		else {
@@ -266,7 +274,9 @@ int main(int argc, char *argv[])
 	} while (valid == 0 && resendCount++ < 7);
 
 	if (valid == 0) {
-		exit(77);
+		printf("Failed: Error Code: %x", buf[6]);
+
+		exit(buf[6]);
 	}
 
 
@@ -281,20 +291,35 @@ int main(int argc, char *argv[])
 	*/
 	int ip = 0;
 	int numberOfIP = (response - 7)/4;
-	printf("response: %d", response);
-	printf("number ip: %d", numberOfIP);
+	//printf("response: %d", response);
+	//printf("number ip: %d", numberOfIP);
 	int j = 0;
 	int k = 0;
 	for (j = 0; j<numberOfIP; j++) {
 		printf("\n%s\t", listOfHostNames[j]);
-		for (k=0; k<4; k++) {
-			printf("%d", buf[7+k+j*4]);
-			if (k != 3) {
-				printf(".");
-			}
-		}
+		int ip1 = buf[7+0+j*4];
+		int ip2 = buf[7+1+j*4];
+		int ip3 = buf[7+2+j*4];
+		int ip4 = buf[7+3+j*4];
+
+		printf("%d.", ip2);
+		printf("%d.", ip1);
+		printf("%d.", ip4);
+		printf("%d", ip3);
+
+
+		//for (k=0; k<4; k++) {
+		//	printf("%d", buf[7+k+j*4]);
+		//		if (k != 3) {
+	//			printf(".");
+	//		}
+		//}
 	}
 
+	printf("\n");
+
+
+	return 0;
  }
 
  int checkRequestIDRange(int ID)
