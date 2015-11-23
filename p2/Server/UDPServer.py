@@ -22,6 +22,7 @@ class Server():
         while True:
             print >>sys.stderr, '\nwaiting to receive message'
             request, address = self.sock.recvfrom(4096)
+            request.encode("hex")
 
             print >>sys.stderr, 'received %s bytes from %s' % (len(request), address)
             print >>sys.stderr, request
