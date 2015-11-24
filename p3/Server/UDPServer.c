@@ -32,6 +32,14 @@ struct msg_w
 } __attribute__((__packed__));
 typedef struct msg_w msg_wt;
 
+struct error_msg
+{
+    unsigned short magicNumber;
+    char GID;
+    unsigned short err;
+} __attribute__((__packed__));
+typedef struct error_msg error_msg_t;
+
 
 int main(int argc, char *argv[])
 {
@@ -103,7 +111,7 @@ int main(int argc, char *argv[])
             exit(1);
         }
         unsigned long ip_address = their_addr.sin_addr.s_addr;
-        if (hasMagicNumber(buf) && isCorrectLength(buf)) {
+        if (hasMagicNumber(buf) && isCorrectLength(buf) && portIsInRange(buf)) {
             if(hasClient()) {
                 if(sendClientWaitingMessage(buf, ip_in_wait, their_addr.sin_port, sockfd, p)){
                     freeaddrinfo(servinfo);
@@ -130,7 +138,7 @@ int main(int argc, char *argv[])
             }
         }
         else {
-            sendErrorMessage(buf);
+            sendErrorMessage(buf, sockfd, p);
         }
 
     }
@@ -155,6 +163,9 @@ bool isCorrectLength(char[] bufIn) {
 bool hasClient() {
     if(ip_in_wait > 0) return true;
     else return false;
+}
+bool portIsInRange(char[] bufIn) {
+    
 }
 
 bool sendClientWaitingMessage(char[] bufIn, unsigned long ip_in, unsigned short port, int sockfd, struct p) {
@@ -188,5 +199,45 @@ bool sendNoClientMessage(char[] bufin, unsigned short port, int sockfd, struct p
     return true;
 
 }
+
+sendErrorMessage(char[] bufIn, int sockfd, struct p) {
+    if(!hasMagicNumber(bufIn)) {
+        sendBadNumMsg(bufIn)
+    }
+    else if(!isCorrectLength){
+        sendBadLengthMsg(bufIn);
+    }
+}
+
+sendBadNumMsg(char[] bufIn, int sockfd, struct p) {
+    error_msg_t msg_out;
+    msg_out.magicNumber = 0xa5a5;
+    msg_out.GID = htons(GID);
+    int numbytes;
+    msg_out.err = 0x0001;
+    if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
+                           p->ai_addr, p->ai_addrlen)) == -1)
+    {
+        perror("listener: sendto");
+        exit(1);
+    }
+
+}
+
+sendBadLengthMsg(char[] bufIn, int sockfd, struct p) {
+    error_msg_t msg_out;
+    msg_out.magicNumber = 0xa5a5;
+    msg_out.GID = htons(GID);
+    int numbytes;
+    msg_out.err = 0x0002;
+    if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
+                           p->ai_addr, p->ai_addrlen)) == -1)
+    {
+        perror("listener: sendto");
+        exit(1);
+    }
+    
+}
+
 
 
