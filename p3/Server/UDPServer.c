@@ -22,7 +22,7 @@ bool hasClient(unsigned long ip_in_wait);
 bool portIsInRange( char bufIn[]) ;
 bool sendClientWaitingMessage(char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct addrinfo *p);
 bool sendNoClientMessage(char bufin[], unsigned short port, int sockfd, struct addrinfo *p);
-void sendErrorMessage(char bufIn, int sockfd, struct addrinfo *p);
+void sendErrorMessage(char bufIn[], int sockfd, struct addrinfo *p);
 void sendBadNumMsg(char bufIn[], int sockfd, struct addrinfo *p);
 void sendBadLengthMsg(char bufIn[], int sockfd, struct addrinfo *p);
 void sendBadPortMsg(char bufIn[], int sockfd, struct addrinfo *p);
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
     int numbytes;
-	struct sockaddr_storage their_addr;
+	struct sockaddr_in their_addr;
 	char buf[MAXBUFFLEN];
 	socklen_t addr_len;
 	char s[INET6_ADDRSTRLEN];
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
             perror("recvfrom");
             exit(1);
         }
-        unsigned long ip_address = their_addr.sin_addr_in.s_addr;
+        unsigned long ip_address = their_addr.sin_addr.s_addr;
         if (hasMagicNumber(buf) && isCorrectLength(buf) && portIsInRange(buf)) {
             if(hasClient(ip_in_wait)) {
                 if(sendClientWaitingMessage(buf, ip_in_wait, their_addr.sin_port, sockfd, p)){
