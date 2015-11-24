@@ -25,11 +25,19 @@ struct msg
 } __attribute__((__packed__));
 typedef struct msg msg_t;
 
+typedef struct {
+    int size;      // slots used so far
+    int capacity;  // total available slots
+    int *data;     // array of integers we're storing
+} Vector;
+
 int main(int argc, char *argv[])
 {
 	int sockfd;
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
+    Vector ip_addresses;
+    vector_init(&ip_addresses);
 	int numbytes;
 	struct sockaddr_storage their_addr;
 	char buf[MAXBUFFLEN];
@@ -85,16 +93,94 @@ int main(int argc, char *argv[])
   freeaddrinfo(servinfo);
 
   printf("listener: waiting to recvfrom...\n");
+    while (1) {
+        addr_len = sizeof their_addr;
+        if ((numbytes = recvfrom(sockfd, buf, MAXBUFFLEN-1 , 0,
+                                 (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+            perror("recvfrom");
+            exit(1);
+        }
+        if (hasMagicNumber(buf) && isCorrectLength(buf)) {
+            if(hasClient(ip_addresses)) {
+                sendClientWaitingMessage(buf);
+            }
+            else {
+                sendNoClientMessage(buf);
+            }
+        }
+        else {
+            sendErrorMessage(buf);
+        }
 
-  addr_len = sizeof their_addr;
-  if ((numbytes = recvfrom(sockfd, buf, MAXBUFFLEN-1 , 0,
-    (struct sockaddr *)&their_addr, &addr_len)) == -1) {
-    perror("recvfrom");
-    exit(1);
-  }
+    }
 
+  
 
 
 	return 0;
  }
+
+bool hasMagicNumber(char[] bufIn) {
+    if(bufIn[0] == 0xa5 && bufIn[1] == 0xa5) return true;
+    else return false;
+}
+
+bool isCorrectLength(char[] bufIn) {
+    int size = sizeof(bufIn);
+    if(size == 5) return true;
+    else return false;
+}
+
+bool hasClient(Vector ip_addresses_in) {
+    if(ip_addresses_in->size > 0) return true;
+    else return false;
+}
+
+
+void vector_init(Vector *vector) {
+    // initialize size and capacity
+    vector->size = 0;
+    vector->capacity = VECTOR_INITIAL_CAPACITY;
+    
+    // allocate memory for vector->data
+    vector->data = malloc(sizeof(int) * vector->capacity);
+}
+
+void vector_append(Vector *vector, int value) {
+    // make sure there's room to expand into
+    vector_double_capacity_if_full(vector);
+    
+    // append the value and increment vector->size
+    vector->data[vector->size++] = value;
+}
+
+int vector_get(Vector *vector, int index) {
+    if (index >= vector->size || index < 0) {
+        printf("Index %d out of bounds for vector of size %d\n", index, vector->size);
+        exit(1);
+    }
+    return vector->data[index];
+}
+
+void vector_set(Vector *vector, int index, int value) {
+    // zero fill the vector up to the desired index
+    while (index >= vector->size) {
+        vector_append(vector, 0);
+    }
+    
+    // set the value at the desired index
+    vector->data[index] = value;
+}
+
+void vector_double_capacity_if_full(Vector *vector) {
+    if (vector->size >= vector->capacity) {
+        // double vector->capacity and resize the allocated memory accordingly
+        vector->capacity *= 2;
+        vector->data = realloc(vector->data, sizeof(int) * vector->capacity);
+    }
+}
+
+void vector_free(Vector *vector) {
+    free(vector->data);
+}
 
