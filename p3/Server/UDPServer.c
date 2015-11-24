@@ -11,38 +11,30 @@
 
 #define SERVERPORT "10019"  // the port users will be connecting to
 #define MAXBUFFLEN 256
+#define GID 9
 
 
 int checkRequestIDRange(int ID);
 struct msg
 {
 	unsigned short magicNumber;
-	unsigned short TML;
-	char checksum;
+    unsigned long ip;
+    unsigned short port;
 	char GID;
-	char requestID;
-	unsigned char data[1024];
 } __attribute__((__packed__));
 typedef struct msg msg_t;
-
-typedef struct {
-    int size;      // slots used so far
-    int capacity;  // total available slots
-    int *data;     // array of integers we're storing
-} Vector;
 
 int main(int argc, char *argv[])
 {
 	int sockfd;
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
-    Vector ip_addresses;
-    vector_init(&ip_addresses);
-	int numbytes;
+    int numbytes;
 	struct sockaddr_storage their_addr;
 	char buf[MAXBUFFLEN];
 	socklen_t addr_len;
 	char s[INET6_ADDRSTRLEN];
+    unsigned long ip_in_wait;
 
 	/*Check for correct terminal usage for this program. 
 	  It should be UDPClient Servername Port# requestID hostname1 hostname2 ... hostnameX
@@ -100,12 +92,19 @@ int main(int argc, char *argv[])
             perror("recvfrom");
             exit(1);
         }
+        unsigned long ip_address = their_addr.sin_addr.s_addr;
         if (hasMagicNumber(buf) && isCorrectLength(buf)) {
-            if(hasClient(ip_addresses)) {
-                sendClientWaitingMessage(buf);
+            if(hasClient()) {
+                if(sendClientWaitingMessage(buf, ip_in_wait, their_addr.sin_port, sockfd, p)) freeaddrinfo(servinfo);
+                else {
+                    perror("listener: sendto");
+                    exit(1);
+
+                }
             }
             else {
                 sendNoClientMessage(buf);
+                ip_in_wait = ip_address;
             }
         }
         else {
@@ -131,56 +130,26 @@ bool isCorrectLength(char[] bufIn) {
     else return false;
 }
 
-bool hasClient(Vector ip_addresses_in) {
-    if(ip_addresses_in->size > 0) return true;
+bool hasClient() {
+    if(sizeof(ip_in_wait > 0)) return true;
     else return false;
 }
 
-
-void vector_init(Vector *vector) {
-    // initialize size and capacity
-    vector->size = 0;
-    vector->capacity = VECTOR_INITIAL_CAPACITY;
-    
-    // allocate memory for vector->data
-    vector->data = malloc(sizeof(int) * vector->capacity);
-}
-
-void vector_append(Vector *vector, int value) {
-    // make sure there's room to expand into
-    vector_double_capacity_if_full(vector);
-    
-    // append the value and increment vector->size
-    vector->data[vector->size++] = value;
-}
-
-int vector_get(Vector *vector, int index) {
-    if (index >= vector->size || index < 0) {
-        printf("Index %d out of bounds for vector of size %d\n", index, vector->size);
+bool sendClientWaitingMessage(char[] bufIn, unsigned long ip_in, unsigned short port, int sockfd, struct p) {
+    msg_t msg_out;
+    int numbytes;
+    msg_out.magicNumber = 0xa5a5;
+    msg_out.ip_address = htonl(ip_in);
+    msg_out.port = htons(port);
+    msg_out.GID = htons(GID);
+    if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
+                           p->ai_addr, p->ai_addrlen)) == -1)
+    {
+        perror("listener: sendto");
         exit(1);
     }
-    return vector->data[index];
-}
-
-void vector_set(Vector *vector, int index, int value) {
-    // zero fill the vector up to the desired index
-    while (index >= vector->size) {
-        vector_append(vector, 0);
-    }
+    return true;
     
-    // set the value at the desired index
-    vector->data[index] = value;
 }
 
-void vector_double_capacity_if_full(Vector *vector) {
-    if (vector->size >= vector->capacity) {
-        // double vector->capacity and resize the allocated memory accordingly
-        vector->capacity *= 2;
-        vector->data = realloc(vector->data, sizeof(int) * vector->capacity);
-    }
-}
-
-void vector_free(Vector *vector) {
-    free(vector->data);
-}
 
