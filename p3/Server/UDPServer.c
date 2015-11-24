@@ -165,6 +165,11 @@ bool hasClient() {
     else return false;
 }
 bool portIsInRange(char[] bufIn) {
+    int num = bufIn[2] - '0';
+    num = num * 5;
+    num = num + 10010;
+    if(num < 10055 || num > 10059) return false;
+    else return true;
     
 }
 
@@ -202,10 +207,13 @@ bool sendNoClientMessage(char[] bufin, unsigned short port, int sockfd, struct p
 
 sendErrorMessage(char[] bufIn, int sockfd, struct p) {
     if(!hasMagicNumber(bufIn)) {
-        sendBadNumMsg(bufIn)
+        sendBadNumMsg(bufIn, sockfd, p)
     }
     else if(!isCorrectLength){
-        sendBadLengthMsg(bufIn);
+        sendBadLengthMsg(bufIn, sockfd, p);
+    }
+    else if(!portIsInRange(bufIn)) {
+        sendBadPortMsg(bufIn, sockfd, p);
     }
 }
 
@@ -238,6 +246,22 @@ sendBadLengthMsg(char[] bufIn, int sockfd, struct p) {
     }
     
 }
+
+sendBadPortMsg(char[] bufIn, int sockfd, struct p) {
+    error_msg_t msg_out;
+    msg_out.magicNumber = 0xa5a5;
+    msg_out.GID = htons(GID);
+    int numbytes;
+    msg_out.err = 0x0004;
+    if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
+                           p->ai_addr, p->ai_addrlen)) == -1)
+    {
+        perror("listener: sendto");
+        exit(1);
+    }
+    
+}
+
 
 
 
