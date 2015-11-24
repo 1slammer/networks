@@ -8,17 +8,32 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <stdbool.h>
 
 #define SERVERPORT "10019"  // the port users will be connecting to
 #define MAXBUFFLEN 256
-#define GID 9
+#define GID_C 9
+
+//Function Prototypes
+
+bool hasMagicNumber( char bufIn[] );
+bool isCorrectLength( char bufIn[]) ;
+bool hasClient(unsigned long ip_in_wait);
+bool portIsInRange( char bufIn[]) ;
+bool sendClientWaitingMessage(char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct addrinfo *p);
+bool sendNoClientMessage(char bufin[], unsigned short port, int sockfd, struct addrinfo *p);
+void sendErrorMessage(char bufIn, int sockfd, struct addrinfo *p);
+void sendBadNumMsg(char bufIn[], int sockfd, struct addrinfo *p);
+void sendBadLengthMsg(char bufIn[], int sockfd, struct addrinfo *p);
+void sendBadPortMsg(char bufIn[], int sockfd, struct addrinfo *p);
 
 
-int checkRequestIDRange(int ID);
+
+
 struct msg
 {
 	unsigned short magicNumber;
-    unsigned long ip;
+    unsigned long ip_address;
     unsigned short port;
 	char GID;
 } __attribute__((__packed__));
@@ -110,9 +125,9 @@ int main(int argc, char *argv[])
             perror("recvfrom");
             exit(1);
         }
-        unsigned long ip_address = their_addr.sin_addr.s_addr;
+        unsigned long ip_address = their_addr.sin_addr_in.s_addr;
         if (hasMagicNumber(buf) && isCorrectLength(buf) && portIsInRange(buf)) {
-            if(hasClient()) {
+            if(hasClient(ip_in_wait)) {
                 if(sendClientWaitingMessage(buf, ip_in_wait, their_addr.sin_port, sockfd, p)){
                     freeaddrinfo(servinfo);
                     ip_in_wait = 0;
@@ -149,22 +164,22 @@ int main(int argc, char *argv[])
 	return 0;
  }
 
-bool hasMagicNumber(char[] bufIn) {
+bool hasMagicNumber(char bufIn[]) {
     if(bufIn[0] == 0xa5 && bufIn[1] == 0xa5) return true;
     else return false;
 }
 
-bool isCorrectLength(char[] bufIn) {
+bool isCorrectLength(char bufIn[]) {
     int size = sizeof(bufIn);
     if(size == 5) return true;
     else return false;
 }
 
-bool hasClient() {
+bool hasClient(unsigned long ip_in_wait) {
     if(ip_in_wait > 0) return true;
     else return false;
 }
-bool portIsInRange(char[] bufIn) {
+bool portIsInRange(char bufIn[]) {
     int num = bufIn[2] - '0';
     num = num * 5;
     num = num + 10010;
@@ -173,13 +188,13 @@ bool portIsInRange(char[] bufIn) {
     
 }
 
-bool sendClientWaitingMessage(char[] bufIn, unsigned long ip_in, unsigned short port, int sockfd, struct p) {
+bool sendClientWaitingMessage(char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct addrinfo *p) {
     msg_t msg_out;
     int numbytes;
     msg_out.magicNumber = 0xa5a5;
     msg_out.ip_address = htonl(ip_in);
     msg_out.port = htons(port);
-    msg_out.GID = htons(GID);
+    msg_out.GID = htons(GID_C);
     if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
                            p->ai_addr, p->ai_addrlen)) == -1)
     {
@@ -189,12 +204,12 @@ bool sendClientWaitingMessage(char[] bufIn, unsigned long ip_in, unsigned short 
     return true;
     
 }
-bool sendNoClientMessage(char[] bufin, unsigned short port, int sockfd, struct p) {
+bool sendNoClientMessage(char bufin[], unsigned short port, int sockfd, struct addrinfo *p) {
     msg_wt msg_out;
     int numbytes;
     msg_out.magicNumber = 0xa5a5;
     msg_out.port = htons(port);
-    msg_out.GID = htons(GID);
+    msg_out.GID = htons(GID_C);
     if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
                            p->ai_addr, p->ai_addrlen)) == -1)
     {
@@ -205,9 +220,9 @@ bool sendNoClientMessage(char[] bufin, unsigned short port, int sockfd, struct p
 
 }
 
-sendErrorMessage(char[] bufIn, int sockfd, struct p) {
+void sendErrorMessage(char bufIn[], int sockfd, struct addrinfo *p) {
     if(!hasMagicNumber(bufIn)) {
-        sendBadNumMsg(bufIn, sockfd, p)
+        sendBadNumMsg(bufIn, sockfd, p);
     }
     else if(!isCorrectLength){
         sendBadLengthMsg(bufIn, sockfd, p);
@@ -217,10 +232,10 @@ sendErrorMessage(char[] bufIn, int sockfd, struct p) {
     }
 }
 
-sendBadNumMsg(char[] bufIn, int sockfd, struct p) {
+void sendBadNumMsg(char bufIn[], int sockfd, struct addrinfo *p) {
     error_msg_t msg_out;
     msg_out.magicNumber = 0xa5a5;
-    msg_out.GID = htons(GID);
+    msg_out.GID = htons(GID_C);
     int numbytes;
     msg_out.err = 0x0001;
     if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
@@ -232,10 +247,10 @@ sendBadNumMsg(char[] bufIn, int sockfd, struct p) {
 
 }
 
-sendBadLengthMsg(char[] bufIn, int sockfd, struct p) {
+void sendBadLengthMsg(char bufIn[], int sockfd, struct addrinfo *p) {
     error_msg_t msg_out;
     msg_out.magicNumber = 0xa5a5;
-    msg_out.GID = htons(GID);
+    msg_out.GID = htons(GID_C);
     int numbytes;
     msg_out.err = 0x0002;
     if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
@@ -247,10 +262,10 @@ sendBadLengthMsg(char[] bufIn, int sockfd, struct p) {
     
 }
 
-sendBadPortMsg(char[] bufIn, int sockfd, struct p) {
+void sendBadPortMsg(char bufIn[], int sockfd, struct addrinfo *p) {
     error_msg_t msg_out;
     msg_out.magicNumber = 0xa5a5;
-    msg_out.GID = htons(GID);
+    msg_out.GID = htons(GID_C);
     int numbytes;
     msg_out.err = 0x0004;
     if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
