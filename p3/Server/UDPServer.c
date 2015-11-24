@@ -17,12 +17,12 @@
 //Function Prototypes
 
 bool hasMagicNumber( char bufIn[] );
-bool isCorrectLength( char bufIn[]) ;
+bool isCorrectLength( char bufIn[], int numBytesIn) ;
 bool hasClient(unsigned long ip_in_wait);
 bool portIsInRange( char bufIn[]) ;
 bool sendClientWaitingMessage(char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct addrinfo *p);
 bool sendNoClientMessage(char bufin[], unsigned short port, int sockfd, struct addrinfo *p);
-void sendErrorMessage(char bufIn[], int sockfd, struct addrinfo *p);
+void sendErrorMessage(char bufIn[], int sockfd, struct addrinfo *, int numbytesIn);
 void sendBadNumMsg(char bufIn[], int sockfd, struct addrinfo *p);
 void sendBadLengthMsg(char bufIn[], int sockfd, struct addrinfo *p);
 void sendBadPortMsg(char bufIn[], int sockfd, struct addrinfo *p);
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
             exit(1);
         }
         unsigned long ip_address = their_addr.sin_addr.s_addr;
-        if (hasMagicNumber(buf) && isCorrectLength(buf) && portIsInRange(buf)) {
+        if (hasMagicNumber(buf) && isCorrectLength(buf, numbytes) && portIsInRange(buf)) {
             if(hasClient(ip_in_wait)) {
                 if(sendClientWaitingMessage(buf, ip_in_wait, their_addr.sin_port, sockfd, p)){
                     freeaddrinfo(servinfo);
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
             }
         }
         else {
-            sendErrorMessage(buf, sockfd, p);
+            sendErrorMessage(buf, sockfd, p, numbytes);
         }
 
     }
@@ -169,9 +169,8 @@ bool hasMagicNumber(char bufIn[]) {
     else return false;
 }
 
-bool isCorrectLength(char bufIn[]) {
-    int size = sizeof(bufIn);
-    if(size == 5) return true;
+bool isCorrectLength(char bufIn[], int numBytesIn) {
+    if(numBytesIn == 5) return true;
     else return false;
 }
 
@@ -194,7 +193,7 @@ bool sendClientWaitingMessage(char bufIn[], unsigned long ip_in, unsigned short 
     msg_out.magicNumber = 0xa5a5;
     msg_out.ip_address = htonl(ip_in);
     msg_out.port = htons(port);
-    msg_out.GID = htons(GID_C);
+    msg_out.GID = GID_C;
     if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
                            p->ai_addr, p->ai_addrlen)) == -1)
     {
@@ -209,7 +208,7 @@ bool sendNoClientMessage(char bufin[], unsigned short port, int sockfd, struct a
     int numbytes;
     msg_out.magicNumber = 0xa5a5;
     msg_out.port = htons(port);
-    msg_out.GID = htons(GID_C);
+    msg_out.GID = GID_C;
     if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
                            p->ai_addr, p->ai_addrlen)) == -1)
     {
@@ -220,11 +219,11 @@ bool sendNoClientMessage(char bufin[], unsigned short port, int sockfd, struct a
 
 }
 
-void sendErrorMessage(char bufIn[], int sockfd, struct addrinfo *p) {
+void sendErrorMessage(char bufIn[], int sockfd, struct addrinfo *p, int numbytesIn) {
     if(!hasMagicNumber(bufIn)) {
         sendBadNumMsg(bufIn, sockfd, p);
     }
-    else if(!isCorrectLength){
+    else if(!isCorrectLength(bufIn, numbytesIn)){
         sendBadLengthMsg(bufIn, sockfd, p);
     }
     else if(!portIsInRange(bufIn)) {
@@ -235,7 +234,7 @@ void sendErrorMessage(char bufIn[], int sockfd, struct addrinfo *p) {
 void sendBadNumMsg(char bufIn[], int sockfd, struct addrinfo *p) {
     error_msg_t msg_out;
     msg_out.magicNumber = 0xa5a5;
-    msg_out.GID = htons(GID_C);
+    msg_out.GID = GID_C;
     int numbytes;
     msg_out.err = 0x0001;
     if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
@@ -250,7 +249,7 @@ void sendBadNumMsg(char bufIn[], int sockfd, struct addrinfo *p) {
 void sendBadLengthMsg(char bufIn[], int sockfd, struct addrinfo *p) {
     error_msg_t msg_out;
     msg_out.magicNumber = 0xa5a5;
-    msg_out.GID = htons(GID_C);
+    msg_out.GID = GID_C;
     int numbytes;
     msg_out.err = 0x0002;
     if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
@@ -265,7 +264,7 @@ void sendBadLengthMsg(char bufIn[], int sockfd, struct addrinfo *p) {
 void sendBadPortMsg(char bufIn[], int sockfd, struct addrinfo *p) {
     error_msg_t msg_out;
     msg_out.magicNumber = 0xa5a5;
-    msg_out.GID = htons(GID_C);
+    msg_out.GID = GID_C;
     int numbytes;
     msg_out.err = 0x0004;
     if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
