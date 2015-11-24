@@ -24,6 +24,15 @@ struct msg
 } __attribute__((__packed__));
 typedef struct msg msg_t;
 
+struct msg_w
+{
+    unsigned short magicNumber;
+    unsigned short port;
+    char GID;
+} __attribute__((__packed__));
+typedef struct msg_w msg_wt;
+
+
 int main(int argc, char *argv[])
 {
 	int sockfd;
@@ -35,6 +44,7 @@ int main(int argc, char *argv[])
 	socklen_t addr_len;
 	char s[INET6_ADDRSTRLEN];
     unsigned long ip_in_wait;
+    unsigned short wait_port;
 
 	/*Check for correct terminal usage for this program. 
 	  It should be UDPClient Servername Port# requestID hostname1 hostname2 ... hostnameX
@@ -95,7 +105,10 @@ int main(int argc, char *argv[])
         unsigned long ip_address = their_addr.sin_addr.s_addr;
         if (hasMagicNumber(buf) && isCorrectLength(buf)) {
             if(hasClient()) {
-                if(sendClientWaitingMessage(buf, ip_in_wait, their_addr.sin_port, sockfd, p)) freeaddrinfo(servinfo);
+                if(sendClientWaitingMessage(buf, ip_in_wait, their_addr.sin_port, sockfd, p)){
+                    freeaddrinfo(servinfo);
+                    ip_in_wait = 0;
+                }
                 else {
                     perror("listener: sendto");
                     exit(1);
@@ -103,8 +116,17 @@ int main(int argc, char *argv[])
                 }
             }
             else {
-                sendNoClientMessage(buf);
+                if (sendNoClientMessage(buf, their_addr.sin_port, sockfd, p)) {
+                    freeaddrinfo(servinfo);
+                }
+                else {
+                    perror("listener: sendto");
+                    exit(1);
+                    
+                }
+
                 ip_in_wait = ip_address;
+                wait_port = their_addr.sin_port;
             }
         }
         else {
@@ -131,7 +153,7 @@ bool isCorrectLength(char[] bufIn) {
 }
 
 bool hasClient() {
-    if(sizeof(ip_in_wait > 0)) return true;
+    if(ip_in_wait > 0) return true;
     else return false;
 }
 
@@ -150,6 +172,21 @@ bool sendClientWaitingMessage(char[] bufIn, unsigned long ip_in, unsigned short 
     }
     return true;
     
+}
+bool sendNoClientMessage(char[] bufin, unsigned short port, int sockfd, struct p) {
+    msg_wt msg_out;
+    int numbytes;
+    msg_out.magicNumber = 0xa5a5;
+    msg_out.port = htons(port);
+    msg_out.GID = htons(GID);
+    if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
+                           p->ai_addr, p->ai_addrlen)) == -1)
+    {
+        perror("listener: sendto");
+        exit(1);
+    }
+    return true;
+
 }
 
 
