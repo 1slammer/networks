@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
 	char buf[MAXBUFFLEN];
 	socklen_t addr_len;
 	char s[INET6_ADDRSTRLEN];
-    unsigned long ip_in_wait;
+    unsigned long ip_in_wait = 0;
     unsigned short wait_port;
 
 	/*Check for correct terminal usage for this program. 
@@ -130,30 +130,37 @@ while (1) {
         if (hasMagicNumber(buf) && isCorrectLength(buf, numbytes) && portIsInRange(buf)) {
             if(hasClient(ip_in_wait)) {
                 if(sendClientWaitingMessage(buf, ip_in_wait, their_addr.sin_port, sockfd, p)){
-                    freeaddrinfo(servinfo);
+					printf("test1\n");
+                    //freeaddrinfo(servinfo);
                     ip_in_wait = 0;
                 }
                 else {
+					printf("test2\n");
                     perror("listener: sendto");
                     exit(1);
 
                 }
             }
             else {
+					printf("test3\n");
                 if (sendNoClientMessage(buf, their_addr.sin_port, sockfd, p)) {
-                    freeaddrinfo(servinfo);
+                    //freeaddrinfo(servinfo);
+					ip_in_wait = 1;
                 }
                 else {
+					printf("test4\n");
                     perror("listener: sendto");
                     exit(1);
                     
                 }
 
+					printf("test5\n");
                 ip_in_wait = ip_address;
                 wait_port = their_addr.sin_port;
             }
         }
         else {
+					printf("test6\n");
             sendErrorMessage(buf, sockfd, p, numbytes);
         }
 
@@ -168,29 +175,42 @@ while (1) {
  }
 
 bool hasMagicNumber(unsigned char bufIn[]) {
+	//printf("bufIn[0] %x\n", bufIn[0]);
+	//printf("true? %d\n", bufIn[0] == 0xa5); 
+	//printf("test: %d\n", sizeof bufIn[0]);
     if(bufIn[0] == 0xa5 && bufIn[1] == 0xa5) return true;
     else return false;
 }
 
 bool isCorrectLength( unsigned char bufIn[], int numBytesIn) {
+	//printf("length %d", numBytesIn);
     if(numBytesIn == 5) return true;
     else return false;
 }
 
 bool hasClient(unsigned long ip_in_wait) {
+	printf("hasClient\n");
+	printf("%d", ip_in_wait>0);
     if(ip_in_wait > 0) return true;
     else return false;
 }
-    int num = bufIn[2] - '0';
-    num = num * 5;
-    num = num + 10010;
-    if(num < 10055 || num > 10059) return false;
-    else return true;
 bool portIsInRange(unsigned char bufIn[]) {
+	printf("port %x\n", bufIn[2]);
+	printf("port %x\n", bufIn[3]);
+    int num = (bufIn[2] << 8) + bufIn[3];
+	printf("num: %d\n", num);
+    //num = num * 5;
+    //num = num + 10010;
+    if(num >= 10055 && num <= 10059) {
+		printf("good port num\n");
+		return true;
+	}
+    else return false;
     
 }
 
 bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct addrinfo *p) {
+	printf("sendClientWaiting\n");
     msg_t msg_out;
     int numbytes;
     msg_out.magicNumber = 0xa5a5;
