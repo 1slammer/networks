@@ -1,7 +1,66 @@
 import sys
 import socket
 
-class Client():
+class ChatClient(object):
+	def __init__(self, serverIP, serverPort):
+		# Cpreate a TCP/IP socket
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+		# Connect the socket to the port where the server is listening
+		server_address = (serverIP, serverPort)
+		print >>sys.stderr, 'connecting to %s port %s' % server_address
+		self.sock.connect(server_address)
+
+	def run(self):
+		msg = raw_input()
+		if msg == "Bye Bye Birdie":
+			self.finish()
+
+		packet = formPacket(msg)
+		sendPacket(packet)
+
+	def formPacket(msg):
+		packet = None
+
+		return packet
+
+	def sendPacket(packet):
+		self.sock.sendall(packet)
+
+
+
+	def finish(self):
+		self.sock.close()
+
+class ChatServer(object):
+	def __init__(self, clientPort):
+		# Create a TCP socket
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+		# Bind the socket to the port
+		server_address = ('localhost', clientPort)
+		print "starting up on %s port %s" % server_address
+		self.sock.bind(server_address)
+
+		# Listen for incoming connections
+		sock.listen(1)
+
+		while True:
+			# Wait for a connection
+			print "Waiting for a connection"
+			connection, client_address = sock.accept()
+
+			try:
+				print "connection from %s" % client_address
+
+				# Recieve data in a single chunk
+				data = connection.recv(256)
+				print "received %s" % data
+
+			finally:
+				connection.close()
+
+class Client(object):
 
 	RESPONSE_INVALID = 0
 	RESPONSE_READY = 1
@@ -30,7 +89,7 @@ class Client():
 		if state == self.RESPONSE_INVALID:
 			self.displayInvalidResponseMessage(response)
 		elif state == self.RESPONSE_WAITING:
-			self.waitForChatPartner()
+			self.setupChatServer()
 		elif state == self.RESPONSE_READY:
 			self.connectToChatServer()
 		
@@ -60,40 +119,15 @@ class Client():
 		print "Invalid response from server"
 		print response
 
-	def waitForChatPartner(self):
+	def setupChatServer(self):
 		print "waiting for a partner to connect"
-		self.setUpChatServer()
 
-	def setUpChatServer(self):
-		# Create a TCP socket
-		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.chatServer = ChatServer(self.clientPort)
 
-		# Bind the socket to the port
-		server_address = ('localhost', self.clientPort)
-		print "starting up on %s port %s" % server_address
-		self.sock.bind(server_address)
-
-		# Listen for incoming connections
-		sock.listen(1)
-
-		while True:
-			# Wait for a connection
-			print "Waiting for a connection"
-			connection, client_address = sock.accept()
-
-			try:
-				print "connection from %s" % client_address
-
-				# Recieve data in a single chunk
-				data = connection.recv(256)
-				print "received %s" % data
-
-			finally:
-				connection.close()
 
 
 	def connectToChatServer(self):
-		pass
+		self.chatClient = ChatClient(serverIP, serverPort)
 
 		
 
