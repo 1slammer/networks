@@ -12,15 +12,40 @@ class ChatClient(object):
 		self.sock.connect(server_address)
 
 	def run(self):
-		msg = raw_input()
-		if msg == "Bye Bye Birdie":
-			self.finish()
+		finished = False
+		while not finished:
+			socket_list = [sys.stdin, s]
 
-		packet = formPacket(msg)
-		sendPacket(packet)
+			# Get list of sockets which are readable
+			read_sockets, write_sockets, error_sockets = select.select(socket_list , [], [])
+
+			for sock in read_sockets:
+				# Incoming message from remote server
+				if sock == s:
+					data = sock.recv(4096)
+					if not data:
+						print "what happened?"
+					else:
+						print data
+						self.prompt()
+
+				else: # user entered a message
+					msg = sys.stdin.readline()
+					if msg == "Bye Bye Birdie":
+						finished = False
+						self.finish()
+						break
+					packet = formPacket(msg)
+					sendPacket(packet)
+					self.prompt()
+
+	def prompt():
+		print "enter message"
+		sys.stdout.flush()
 
 	def formPacket(msg):
-		packet = None
+		# I think we just send the msg, no header or anything fancy..
+		packet = msg
 
 		return packet
 
