@@ -119,7 +119,7 @@ while (1) {
   freeaddrinfo(servinfo);
 
   printf("listener: waiting to recvfrom...\n");
-    while (1) {
+    //while (1) {
         addr_len = sizeof their_addr;
         if ((numbytes = recvfrom(sockfd, buf, MAXBUFFLEN-1 , 0,
                                  (struct sockaddr *)&their_addr, &addr_len)) == -1) {
@@ -161,6 +161,7 @@ while (1) {
     }
 
   
+
 
 
 	return 0;
