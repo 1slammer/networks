@@ -107,9 +107,6 @@ class Client(object):
 	def requestChat(self):
 		request = self.formRequest()
 		response = self.sendChatRequest(request)
-		print
-		print response
-		print
 		state = self.parseResponse(response)
 
 		if state == self.RESPONSE_INVALID:
