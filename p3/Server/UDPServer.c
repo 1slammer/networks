@@ -82,27 +82,31 @@ int main(int argc, char *argv[])
 	char* serverPort = argv[1];
 
 
-while (1) {
+while (1) 
+{
 
 	memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_UNSPEC; // set to AF_INET to force IPv4
   hints.ai_socktype = SOCK_DGRAM;
   hints.ai_flags = AI_PASSIVE; // use my IP
 
-  if ((rv = getaddrinfo(NULL, serverPort, &hints, &servinfo)) != 0) {
+  if ((rv = getaddrinfo(NULL, serverPort, &hints, &servinfo)) != 0) 
+  {
     fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
     return 1;
   }
 
   // loop through all the results and bind to the first we can
-  for(p = servinfo; p != NULL; p = p->ai_next) {
+  for(p = servinfo; p != NULL; p = p->ai_next) 
+  {
     if ((sockfd = socket(p->ai_family, p->ai_socktype,
         p->ai_protocol)) == -1) {
       perror("listener: socket");
       continue;
     }
 
-    if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
+    if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) 
+    {
       close(sockfd);
       perror("listener: bind");
       continue;
@@ -111,7 +115,8 @@ while (1) {
     break;
   }
 
-  if (p == NULL) {
+  if (p == NULL) 
+  {
     fprintf(stderr, "listener: failed to bind socket\n");
     return 2;
   }
@@ -122,39 +127,46 @@ while (1) {
     //while (1) {
         addr_len = sizeof their_addr;
         if ((numbytes = recvfrom(sockfd, buf, MAXBUFFLEN-1 , 0,
-                                 (struct sockaddr *)&their_addr, &addr_len)) == -1) {
+                                 (struct sockaddr *)&their_addr, &addr_len)) == -1) 
+        {
             perror("recvfrom");
             exit(1);
         }
         unsigned long ip_address = their_addr.sin_addr.s_addr;
-        if (hasMagicNumber(buf) && isCorrectLength(buf, numbytes) && portIsInRange(buf)) {
-            if(hasClient(ip_in_wait)) {
+        if (hasMagicNumber(buf) && isCorrectLength(buf, numbytes) && portIsInRange(buf)) 
+        {
+            if(hasClient(ip_in_wait)) 
+            {
                 if(sendClientWaitingMessage(buf, ip_in_wait, their_addr.sin_port, sockfd, p)){
 					printf("test1\n");
                     //freeaddrinfo(servinfo);
                     ip_in_wait = 0;
                 }
-                else {
+                else 
+                {
 					printf("test2\n");
                     perror("listener: sendto");
                     exit(1);
 
                 }
             }
-            else {
+            else 
+            {
 					printf("test3\n");
-                if (sendNoClientMessage(buf, their_addr.sin_port, sockfd, p)) {
+                if (sendNoClientMessage(buf, their_addr.sin_port, sockfd, p)) 
+                {
                     //freeaddrinfo(servinfo);
 					ip_in_wait = 1;
                 }
-                else {
+                else 
+                {
 					printf("test4\n");
                     perror("listener: sendto");
                     exit(1);
                     
                 }
 
-					printf("test5\n");
+				printf("test5\n");
                 ip_in_wait = ip_address;
                 wait_port = their_addr.sin_port;
             }
@@ -174,7 +186,8 @@ while (1) {
 	return 0;
  }
 
-bool hasMagicNumber(unsigned char bufIn[]) {
+bool hasMagicNumber(unsigned char bufIn[]) 
+{
 	//printf("bufIn[0] %x\n", bufIn[0]);
 	//printf("true? %d\n", bufIn[0] == 0xa5); 
 	//printf("test: %d\n", sizeof bufIn[0]);
@@ -182,26 +195,30 @@ bool hasMagicNumber(unsigned char bufIn[]) {
     else return false;
 }
 
-bool isCorrectLength( unsigned char bufIn[], int numBytesIn) {
+bool isCorrectLength( unsigned char bufIn[], int numBytesIn) 
+{
 	//printf("length %d", numBytesIn);
     if(numBytesIn == 5) return true;
     else return false;
 }
 
-bool hasClient(unsigned long ip_in_wait) {
+bool hasClient(unsigned long ip_in_wait) 
+{
 	printf("hasClient\n");
 	printf("%d", ip_in_wait>0);
     if(ip_in_wait > 0) return true;
     else return false;
 }
-bool portIsInRange(unsigned char bufIn[]) {
+bool portIsInRange(unsigned char bufIn[]) 
+{
 	printf("port %x\n", bufIn[2]);
 	printf("port %x\n", bufIn[3]);
     int num = (bufIn[2] << 8) + bufIn[3];
 	printf("num: %d\n", num);
     //num = num * 5;
     //num = num + 10010;
-    if(num >= 10055 && num <= 10059) {
+    if(num >= 10055 && num <= 10059) 
+    {
 		printf("good port num\n");
 		return true;
 	}
@@ -209,7 +226,8 @@ bool portIsInRange(unsigned char bufIn[]) {
     
 }
 
-bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct addrinfo *p) {
+bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct addrinfo *p) 
+{
 	printf("sendClientWaiting\n");
     msg_t msg_out;
     int numbytes;
@@ -226,7 +244,8 @@ bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, unsign
     return true;
     
 }
-bool sendNoClientMessage(unsigned char bufin[], unsigned short port, int sockfd, struct addrinfo *p) {
+bool sendNoClientMessage(unsigned char bufin[], unsigned short port, int sockfd, struct addrinfo *p)
+{
     msg_wt msg_out;
     int numbytes;
     msg_out.magicNumber = 0xa5a5;
@@ -242,19 +261,24 @@ bool sendNoClientMessage(unsigned char bufin[], unsigned short port, int sockfd,
 
 }
 
-void sendErrorMessage(unsigned char bufIn[], int sockfd, struct addrinfo *p, int numbytesIn) {
-    if(!hasMagicNumber(bufIn)) {
+void sendErrorMessage(unsigned char bufIn[], int sockfd, struct addrinfo *p, int numbytesIn) 
+{
+    if(!hasMagicNumber(bufIn)) 
+    {
         sendBadNumMsg(bufIn, sockfd, p);
     }
-    else if(!isCorrectLength(bufIn, numbytesIn)){
+    else if(!isCorrectLength(bufIn, numbytesIn))
+    {
         sendBadLengthMsg(bufIn, sockfd, p);
     }
-    else if(!portIsInRange(bufIn)) {
+    else if(!portIsInRange(bufIn)) 
+    {
         sendBadPortMsg(bufIn, sockfd, p);
     }
 }
 
-void sendBadNumMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p) {
+void sendBadNumMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p) 
+{
     error_msg_t msg_out;
     msg_out.magicNumber = 0xa5a5;
     msg_out.GID = GID_C;
@@ -269,7 +293,8 @@ void sendBadNumMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p) {
 
 }
 
-void sendBadLengthMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p) {
+void sendBadLengthMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p) 
+{
     error_msg_t msg_out;
     msg_out.magicNumber = 0xa5a5;
     msg_out.GID = GID_C;
@@ -284,7 +309,8 @@ void sendBadLengthMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p) {
     
 }
 
-void sendBadPortMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p) {
+void sendBadPortMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p) 
+{
     error_msg_t msg_out;
     msg_out.magicNumber = 0xa5a5;
     msg_out.GID = GID_C;

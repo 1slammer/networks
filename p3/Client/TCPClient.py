@@ -157,6 +157,9 @@ class Client(object):
 		# if response complete
 		return self.RESPONSE_READY
 
+	def verifyMagicNumber(self, response):
+		pass
+
 
 
 	def displayInvalidResponseMessage(self, response):
