@@ -99,12 +99,18 @@ class Client(object):
 
 	def setup(self, serverName, serverPort, clientPort):
 		# Create a TCP socket
-		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		#self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		server_address = (serverName, serverPort)
+		try:
+			self.sock = socket.create_connection(server_address, timeout=2)
+		except Exception as e:
+			print "Server Probably not Running"
+			sys.exit()
 
 		# Connect the socket to the port where the server is listening
-		server_address = (serverName, serverPort)
 		print >> sys.stderr, 'connecting to %s port %s' % server_address
-		self.sock.connect(server_address)
+		#self.sock.settimeout(2)
+		#self.sock.connect(server_address)
 
 	def requestChat(self):
 		request = self.formRequest()
@@ -119,12 +125,25 @@ class Client(object):
 			self.connectToChatServer()
 		
 	def formRequest(self):
-		request = None
+		request = bytearray(5)
+		request[0] = 0x5A					# first part of magic number
+		request[1] = 0x5A					# second part of magic number
+		request[2] = self.clientPort >> 8	# port MSB
+		request[3] = self.clientPort & 0xFF	# port LSB
+		request[4] = 0x09					# Group ID
 
 		return request
 
 	def sendChatRequest(self, request):
-		response = None
+		self.sock.sendall(request)
+
+		try:
+			response = self.sock.recv(4096)
+			print "response from server"
+			print response
+		except Exception as e:
+			print "Server probably not running"
+			sys.exit()
 
 		return response
 
