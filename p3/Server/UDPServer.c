@@ -82,6 +82,7 @@ int main(int argc, char *argv[])
 	char* serverPort = argv[1];
 
 
+while (1) {
 
 	memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_UNSPEC; // set to AF_INET to force IPv4
@@ -156,6 +157,7 @@ int main(int argc, char *argv[])
             sendErrorMessage(buf, sockfd, p, numbytes);
         }
 
+		close(sockfd);
     }
 
   

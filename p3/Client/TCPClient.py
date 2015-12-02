@@ -98,19 +98,11 @@ class Client(object):
 
 
 	def setup(self, serverName, serverPort, clientPort):
-		# Create a TCP socket
-		#self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		server_address = (serverName, serverPort)
-		try:
-			self.sock = socket.create_connection(server_address, timeout=2)
-		except Exception as e:
-			print "Server Probably not Running"
-			sys.exit()
+		# Create a UDP socket
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+		self.server_address = (serverName, serverPort)
 
-		# Connect the socket to the port where the server is listening
-		print >> sys.stderr, 'connecting to %s port %s' % server_address
-		#self.sock.settimeout(2)
-		#self.sock.connect(server_address)
+		print >> sys.stderr, 'connecting to %s port %s' % self.server_address
 
 	def requestChat(self):
 		request = self.formRequest()
@@ -135,14 +127,22 @@ class Client(object):
 		return request
 
 	def sendChatRequest(self, request):
-		self.sock.sendall(request)
+		try:
+			sent = self.sock.sendto(request, self.server_address)
+			print request
+			print len(request)
+			print sent
+		except Exception as e:
+			print "Error sending chat request to UDP server"
+			sys.exit()
 
 		try:
-			response = self.sock.recv(4096)
+			print "waiting for response from server"
+			response, server = self.sock.recvfrom(4096)
 			print "response from server"
 			print response
 		except Exception as e:
-			print "Server probably not running"
+			print "Error receiving data from UDP server"
 			sys.exit()
 
 		return response
