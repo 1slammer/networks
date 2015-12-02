@@ -118,8 +118,8 @@ class Client(object):
 		
 	def formRequest(self):
 		request = bytearray(5)
-		request[0] = 0x5A					# first part of magic number
-		request[1] = 0x5A					# second part of magic number
+		request[0] = 0xA5					# first part of magic number
+		request[1] = 0xA5					# second part of magic number
 		request[2] = self.clientPort >> 8	# port MSB
 		request[3] = self.clientPort & 0xFF	# port LSB
 		request[4] = 0x09					# Group ID
