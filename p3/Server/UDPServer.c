@@ -16,16 +16,16 @@
 
 //Function Prototypes
 
-bool hasMagicNumber( char bufIn[] );
-bool isCorrectLength( char bufIn[], int numBytesIn) ;
+bool hasMagicNumber( unsigned char bufIn[] );
+bool isCorrectLength( unsigned char bufIn[], int numBytesIn) ;
 bool hasClient(unsigned long ip_in_wait);
-bool portIsInRange( char bufIn[]) ;
-bool sendClientWaitingMessage(char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct addrinfo *p);
-bool sendNoClientMessage(char bufin[], unsigned short port, int sockfd, struct addrinfo *p);
-void sendErrorMessage(char bufIn[], int sockfd, struct addrinfo *, int numbytesIn);
-void sendBadNumMsg(char bufIn[], int sockfd, struct addrinfo *p);
-void sendBadLengthMsg(char bufIn[], int sockfd, struct addrinfo *p);
-void sendBadPortMsg(char bufIn[], int sockfd, struct addrinfo *p);
+bool portIsInRange( unsigned char bufIn[]) ;
+bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct addrinfo *p);
+bool sendNoClientMessage(unsigned char bufin[], unsigned short port, int sockfd, struct addrinfo *p);
+void sendErrorMessage(unsigned char bufIn[], int sockfd, struct addrinfo *, int numbytesIn);
+void sendBadNumMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p);
+void sendBadLengthMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p);
+void sendBadPortMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p);
 
 
 
@@ -167,12 +167,12 @@ while (1) {
 	return 0;
  }
 
-bool hasMagicNumber(char bufIn[]) {
+bool hasMagicNumber(unsigned char bufIn[]) {
     if(bufIn[0] == 0xa5 && bufIn[1] == 0xa5) return true;
     else return false;
 }
 
-bool isCorrectLength(char bufIn[], int numBytesIn) {
+bool isCorrectLength( unsigned char bufIn[], int numBytesIn) {
     if(numBytesIn == 5) return true;
     else return false;
 }
@@ -181,16 +181,16 @@ bool hasClient(unsigned long ip_in_wait) {
     if(ip_in_wait > 0) return true;
     else return false;
 }
-bool portIsInRange(char bufIn[]) {
     int num = bufIn[2] - '0';
     num = num * 5;
     num = num + 10010;
     if(num < 10055 || num > 10059) return false;
     else return true;
+bool portIsInRange(unsigned char bufIn[]) {
     
 }
 
-bool sendClientWaitingMessage(char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct addrinfo *p) {
+bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct addrinfo *p) {
     msg_t msg_out;
     int numbytes;
     msg_out.magicNumber = 0xa5a5;
@@ -206,7 +206,7 @@ bool sendClientWaitingMessage(char bufIn[], unsigned long ip_in, unsigned short 
     return true;
     
 }
-bool sendNoClientMessage(char bufin[], unsigned short port, int sockfd, struct addrinfo *p) {
+bool sendNoClientMessage(unsigned char bufin[], unsigned short port, int sockfd, struct addrinfo *p) {
     msg_wt msg_out;
     int numbytes;
     msg_out.magicNumber = 0xa5a5;
@@ -222,7 +222,7 @@ bool sendNoClientMessage(char bufin[], unsigned short port, int sockfd, struct a
 
 }
 
-void sendErrorMessage(char bufIn[], int sockfd, struct addrinfo *p, int numbytesIn) {
+void sendErrorMessage(unsigned char bufIn[], int sockfd, struct addrinfo *p, int numbytesIn) {
     if(!hasMagicNumber(bufIn)) {
         sendBadNumMsg(bufIn, sockfd, p);
     }
@@ -234,7 +234,7 @@ void sendErrorMessage(char bufIn[], int sockfd, struct addrinfo *p, int numbytes
     }
 }
 
-void sendBadNumMsg(char bufIn[], int sockfd, struct addrinfo *p) {
+void sendBadNumMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p) {
     error_msg_t msg_out;
     msg_out.magicNumber = 0xa5a5;
     msg_out.GID = GID_C;
@@ -249,7 +249,7 @@ void sendBadNumMsg(char bufIn[], int sockfd, struct addrinfo *p) {
 
 }
 
-void sendBadLengthMsg(char bufIn[], int sockfd, struct addrinfo *p) {
+void sendBadLengthMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p) {
     error_msg_t msg_out;
     msg_out.magicNumber = 0xa5a5;
     msg_out.GID = GID_C;
@@ -264,7 +264,7 @@ void sendBadLengthMsg(char bufIn[], int sockfd, struct addrinfo *p) {
     
 }
 
-void sendBadPortMsg(char bufIn[], int sockfd, struct addrinfo *p) {
+void sendBadPortMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p) {
     error_msg_t msg_out;
     msg_out.magicNumber = 0xa5a5;
     msg_out.GID = GID_C;
