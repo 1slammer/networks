@@ -6,6 +6,7 @@ class ChatClient(object):
 	def __init__(self, serverIP, serverPort):
 		# Cpreate a TCP/IP socket
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.serverIP = serverIP
 
 		# Connect the socket to the port where the server is listening
 		server_address = (serverIP, serverPort)
@@ -64,17 +65,17 @@ class ChatServer(object):
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 		# Bind the socket to the port
-		server_address = ('localhost', clientPort)
+		server_address = (socket.gethostname(), clientPort)
 		print "starting up on %s port %s" % server_address
 		self.sock.bind(server_address)
 
 		# Listen for incoming connections
-		sock.listen(1)
+		self.sock.listen(1)
 
 		while True:
 			# Wait for a connection
 			print "Waiting for a connection"
-			connection, client_address = sock.accept()
+			connection, client_address = self.sock.accept()
 
 			try:
 				print "connection from %s" % client_address
@@ -123,7 +124,8 @@ class Client(object):
 		elif state == self.RESPONSE_WAITING:
 			self.setupChatServer()
 		elif state == self.RESPONSE_READY:
-			self.connectToChatServer()
+			serverIP, serverPort = self.getServerInfo(response)
+			self.connectToChatServer(serverIP, serverPort)
 		
 	def formRequest(self):
 		request = bytearray(5)
@@ -163,11 +165,11 @@ class Client(object):
 		print responseArray[0]
 
 		# if server's response is invalid
-		if not hasMagicNumber(responseArray):
+		if not self.hasMagicNumber(responseArray):
 			return self.RESPONSE_INVALID
 
 		# if invalid request
-		if checkLastByteForErrorCode(responseArray[-1]):
+		if self.checkLastByteForErrorCode(responseArray[-1]):
 			#Error message saved @self
 			createErrorMessage(responseArray[-1])
 			return self.REQUEST_INVALID
@@ -175,12 +177,33 @@ class Client(object):
 		# if reponse only magic number
 		if len(responseArray) == 5:
 			#See specs about print screen
-			print "The magic number is: %s%s" % responseArray[0], responseArray[0]
+			print "The magic number is: %s %s" % (responseArray[0], responseArray[0])
 			return self.RESPONSE_WAITING
 
 		# if response complete
 		#NOT DONE
 		return self.RESPONSE_READY
+
+
+	def getServerInfo(self, response):
+		responseArray = array.array('B', response)
+
+		if not self.hasMagicNumber(responseArray):
+			return self.RESPONSE_INVALID
+
+		ip = [None]*4
+		ip = (str(responseArray[5]) + "." + 
+			  str(responseArray[4]) + "." +
+			  str(responseArray[3]) + "." + 
+			  str(responseArray[2]))
+
+		port = (responseArray[6] << 8) + responseArray[7]
+
+		print "ip"
+		print ip
+		print "port"
+		print port
+		return ip, port
 
 	def checkLastByteForErrorCode(self, lastByte):
 		#Error message from server will have last byte one of these numbers
@@ -213,7 +236,7 @@ class Client(object):
 		print "waiting for a partner to connect"
 		self.chatServer = ChatServer(self.clientPort)
 
-	def connectToChatServer(self):
+	def connectToChatServer(self, serverIP, serverPort):
 		self.chatClient = ChatClient(serverIP, serverPort)
 
 		

@@ -33,7 +33,7 @@ void sendBadPortMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p);
 struct msg
 {
 	unsigned short magicNumber;
-    unsigned long ip_address;
+    unsigned int ip_address;
     unsigned short port;
 	char GID;
 } __attribute__((__packed__));
