@@ -137,7 +137,7 @@ while (1)
         {
             if(hasClient(ip_in_wait)) 
             {
-                if(sendClientWaitingMessage(buf, ip_in_wait, their_addr.sin_port, sockfd, their_addr))
+                if(sendClientWaitingMessage(buf, ip_in_wait, sockfd, their_addr))
                 {
 					printf("test1\n");
                     //freeaddrinfo(servinfo);
@@ -252,7 +252,7 @@ bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, int so
 //Need to just grab the client's port within the request AlexAg
 bool sendNoClientMessage(unsigned char bufIn[], int sockfd, struct sockaddr_in their_addr) 
 {
-    port = (bufIn[2] << 8) + bufIn[3];
+    unsigned short port = (bufIn[2] << 8) + bufIn[3];
 	printf("send port: %d", port);
     msg_wt msg_out;
     int numbytes;
