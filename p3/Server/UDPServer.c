@@ -21,7 +21,7 @@ bool isCorrectLength( unsigned char bufIn[], int numBytesIn) ;
 bool hasClient(unsigned long ip_in_wait);
 bool portIsInRange( unsigned char bufIn[]) ;
 bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct addrinfo *p);
-bool sendNoClientMessage(unsigned char bufin[], unsigned short port, int sockfd, struct addrinfo *p);
+bool sendNoClientMessage(unsigned char bufin[], unsigned short port, int sockfd, struct sockaddr_in their_addr);
 void sendErrorMessage(unsigned char bufIn[], int sockfd, struct addrinfo *, int numbytesIn);
 void sendBadNumMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p);
 void sendBadLengthMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p);
@@ -143,7 +143,7 @@ while (1) {
             }
             else {
 					printf("test3\n");
-                if (sendNoClientMessage(buf, their_addr.sin_port, sockfd, p)) {
+                if (sendNoClientMessage(buf, their_addr.sin_port, sockfd, their_addr)) {
                     //freeaddrinfo(servinfo);
 					ip_in_wait = 1;
                 }
@@ -226,14 +226,17 @@ bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, unsign
     return true;
     
 }
-bool sendNoClientMessage(unsigned char bufin[], unsigned short port, int sockfd, struct addrinfo *p) {
+bool sendNoClientMessage(unsigned char bufIn[], unsigned short port, int sockfd, struct sockaddr_in their_addr) {
+    //port = (bufIn[2] << 8) + bufIn[3];
+	printf("send port: %d", port);
     msg_wt msg_out;
     int numbytes;
     msg_out.magicNumber = 0xa5a5;
     msg_out.port = htons(port);
     msg_out.GID = GID_C;
+	printf("size of msg out: %d", sizeof(msg_out));
     if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
-                           p->ai_addr, p->ai_addrlen)) == -1)
+                           (struct sockaddr *)&their_addr, sizeof their_addr)) == -1)
     {
         perror("listener: sendto");
         exit(1);
