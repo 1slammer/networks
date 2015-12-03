@@ -190,10 +190,10 @@ class Client(object):
 			sys.exit()
 
 		try:
-			print "waiting for response from server"
+			#print "waiting for response from server"
 			response, server = self.sock.recvfrom(4096)
-			print "response from server"
-			print response
+			#print "response from server"
+			#print response
 		except Exception as e:
 			print "Error receiving data from UDP server"
 			sys.exit()
@@ -201,29 +201,30 @@ class Client(object):
 		return response
 
 	def parseResponse(self, response):
-		print len(response)
+		#print len(response)
 		responseArray =  array.array('B', response)
-		print responseArray
-		print responseArray[0]
+		#print responseArray
+		#print responseArray[0]
 
-		# if server's response is invalid
-		if not self.hasMagicNumber(responseArray):
-			return self.RESPONSE_INVALID
 
-		# if invalid request
-		if self.checkLastByteForErrorCode(responseArray[-1]):
-			#Error message saved @self
-			createErrorMessage(responseArray[-1])
+		# Check if response indicates error in our previous chat request packet
+		if (len(responseArray) == 5) and (responseArray[3] == 00):
+			self.createErrorMessage(responseArray[-1])
 			return self.REQUEST_INVALID
 
-		# if reponse only magic number
+		# Valid response from server here
+
+		print "Magic number from Server: %x%x" % (responseArray[0], responseArray[0])
+		
+		# if reponse only magic number, GID, and port
 		if len(responseArray) == 5:
 			#See specs about print screen
-			print "The magic number is: %s %s" % (responseArray[0], responseArray[0])
 			return self.RESPONSE_WAITING
 
-		# if response complete
-		#NOT DONE
+		# if response says client already waiting to chat
+		serverIP, serverPort = self.getServerInfo(response)
+		print "IP of Waiting Client: %s" % serverIP
+		print "Port of Waiting Client: %s" % serverPort
 		return self.RESPONSE_READY
 
 
@@ -241,26 +242,23 @@ class Client(object):
 
 		port = (responseArray[6] << 8) + responseArray[7]
 
-		print "ip"
-		print ip
-		print "port"
-		print port
 		return ip, port
 
 	def checkLastByteForErrorCode(self, lastByte):
-		#Error message from server will have last byte one of these numbers
-		if lastByte == 1 or lastByte == 2 or lastByte == 4:
+		print "last byte: %s" % lastByte
+		if lastByte & 7:
 			return True
 		else:
 			return False
 
 	def createErrorMessage(self, errorCode):
-		if errorCode == 1:
-			self.errorMessage = "Client's request did not provide magic number!"
-		elif errorCode == 2:
-			self.errorMessage = "Client's request in not a valid length!"
-		elif errorCode == 4:
-			self.errorMessage = "Client's request port number is out of range!"
+		self.errorMessage = ""
+		if errorCode & 1:
+			self.errorMessage += "Client's request did not provide magic number!\n"
+		if errorCode & 2:
+			self.errorMessage += "Client's request in not a valid length!\n"
+		if errorCode & 4:
+			self.errorMessage += "Client's request port number is out of range!\n"
 
 
 	def displayInvalidRequestMessage(self, request):

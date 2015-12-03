@@ -123,7 +123,7 @@ while (1)
 
   freeaddrinfo(servinfo);
 
-  printf("listener: waiting to recvfrom...\n");
+  printf("\nWaiting for client to connect...\n");
     //while (1) {
         addr_len = sizeof their_addr;
         if ((numbytes = recvfrom(sockfd, buf, MAXBUFFLEN-1 , 0,
@@ -139,13 +139,10 @@ while (1)
             {
                 if(sendClientWaitingMessage(buf, ip_in_wait, sockfd, their_addr))
                 {
-					printf("test1\n");
-                    //freeaddrinfo(servinfo);
                     ip_in_wait = 0;
                 }
                 else 
                 {
-					printf("test2\n");
                     perror("listener: sendto");
                     exit(1);
 
@@ -153,29 +150,24 @@ while (1)
             }
             else 
             {
-					printf("test3\n");
                 //Removed second paramter: their_addr.sin_port 
                 //Need to just grab the client's port within the request AlexAg
                 if (sendNoClientMessage(buf, sockfd, their_addr)) 
                 {
-                    //freeaddrinfo(servinfo);
 					ip_in_wait = 1;
                 }
                 else 
                 {
-					printf("test4\n");
                     perror("listener: sendto");
                     exit(1);
                     
                 }
 
-				printf("test5\n");
                 ip_in_wait = ip_address;
                 wait_port = their_addr.sin_port;
             }
         }
         else {
-					printf("test6\n");
             sendErrorMessage(buf, sockfd, p, numbytes);
         }
 
@@ -191,38 +183,26 @@ while (1)
 
 bool hasMagicNumber(unsigned char bufIn[]) 
 {
-	//printf("bufIn[0] %x\n", bufIn[0]);
-	//printf("true? %d\n", bufIn[0] == 0xa5); 
-	//printf("test: %d\n", sizeof bufIn[0]);
 	if(bufIn[0] == 0xa5 && bufIn[1] == 0xa5) return true;
     else return false;
 }
 
 bool isCorrectLength( unsigned char bufIn[], int numBytesIn) 
 {
-	//printf("length %d", numBytesIn);
     if(numBytesIn == 5) return true;
     else return false;
 }
 
 bool hasClient(unsigned long ip_in_wait) 
 {
-	printf("hasClient\n");
-	printf("%d", ip_in_wait>0);
     if(ip_in_wait > 0) return true;
     else return false;
 }
 bool portIsInRange(unsigned char bufIn[]) 
 {
-	printf("port %x\n", bufIn[2]);
-	printf("port %x\n", bufIn[3]);
     int num = (bufIn[2] << 8) + bufIn[3];
-	printf("num: %d\n", num);
-    //num = num * 5;
-    //num = num + 10010;
     if(num >= 10055 && num <= 10059) 
     {
-		printf("good port num\n");
 		return true;
 	}
     else return false;
@@ -231,7 +211,6 @@ bool portIsInRange(unsigned char bufIn[])
 
 bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, int sockfd, struct sockaddr_in their_addr) 
 {
-	printf("sendClientWaiting\n");
     unsigned short port = (bufIn[2] << 8) + bufIn[3];
     msg_t msg_out;
     int numbytes;
@@ -245,29 +224,26 @@ bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, int so
         perror("listener: sendto");
         exit(1);
     }
+	printf("Paired new client with waiting client to chat!\n");
     return true;
-    
 }
-//Removed second paramter: their_addr.sin_port 
-//Need to just grab the client's port within the request AlexAg
+
 bool sendNoClientMessage(unsigned char bufIn[], int sockfd, struct sockaddr_in their_addr) 
 {
     unsigned short port = (bufIn[2] << 8) + bufIn[3];
-	printf("send port: %d", port);
     msg_wt msg_out;
     int numbytes;
     msg_out.magicNumber = 0xa5a5;
     msg_out.port = htons(port);
     msg_out.GID = GID_C;
-	printf("size of msg out: %d", sizeof(msg_out));
     if ((numbytes = sendto(sockfd, &msg_out, sizeof(msg_out), 0,
                            (struct sockaddr *)&their_addr, sizeof their_addr)) == -1)
     {
         perror("listener: sendto");
         exit(1);
     }
+	printf("New client waiting to chat!\n");
     return true;
-
 }
 
 void sendErrorMessage(unsigned char bufIn[], int sockfd, struct addrinfo *p, int numbytesIn) 
