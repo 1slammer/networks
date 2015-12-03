@@ -15,6 +15,7 @@ class ChatClient(object):
 		self.sock.connect(server_address)
 
 	def run(self):
+		self.prompt()
 		finished = False
 		while not finished:
 			socket_list = [sys.stdin, self.sock]
@@ -28,6 +29,7 @@ class ChatClient(object):
 					data = sock.recv(4096)
 					if not data:
 						print "what happened?"
+						sys.exit()
 					else:
 						print data
 						self.prompt()
@@ -38,23 +40,22 @@ class ChatClient(object):
 						finished = False
 						self.finish()
 						break
-					packet = formPacket(msg)
-					sendPacket(packet)
+					packet = self.formPacket(msg)
+					self.sendPacket(packet)
 					self.prompt()
 
-	def prompt():
-		print "enter message"
+	def prompt(self):
+		print "enter message: "
 		sys.stdout.flush()
 
-	def formPacket(msg):
+	def formPacket(self, msg):
 		# I think we just send the msg, no header or anything fancy..
 		packet = msg
 
 		return packet
 
-	def sendPacket(packet):
+	def sendPacket(self, packet):
 		self.sock.sendall(packet)
-
 
 
 	def finish(self):
@@ -76,17 +77,61 @@ class ChatServer(object):
 		while True:
 			# Wait for a connection
 			print "Waiting for a connection"
-			connection, client_address = self.sock.accept()
+			self.connection, client_address = self.sock.accept()
 
-			try:
-				print "connection from %s port %s" % client_address
+			self.run()
 
-				# Recieve data in a single chunk
-				data = connection.recv(256)
-				print "received %s" % data
 
-			finally:
-				connection.close()
+	def run(self):
+		self.prompt()
+		finished = False
+		while not finished:
+			socket_list = [sys.stdin, self.connection]
+
+			# Get list of sockets which are readable
+			read_sockets, write_sockets, error_sockets = select.select(socket_list , [], [])
+
+			for sock in read_sockets:
+				# Incoming message from remote server
+				if sock == self.connection:
+					data = self.connection.recv(4096)
+					if not data:
+						print "what happened?"
+						print sock
+						print len(read_sockets)
+						print read_sockets
+						#sock = None
+						sys.exit()
+					else:
+						print data
+						self.prompt()
+
+				else: # user entered a message
+					msg = sys.stdin.readline()
+					if msg == "Bye Bye Birdie":
+						finished = False
+						self.finish()
+						break
+					packet = self.formPacket(msg)
+					self.sendPacket(packet)
+					self.prompt()
+
+	def prompt(self):
+		print "enter message: "
+		sys.stdout.flush()
+
+	def formPacket(self, msg):
+		# I think we just send the msg, no header or anything fancy..
+		packet = msg
+
+		return packet
+
+	def sendPacket(self, packet):
+		self.connection.sendall(packet)
+
+
+	def finish(self):
+		self.connection.close()
 
 class Client(object):
 
