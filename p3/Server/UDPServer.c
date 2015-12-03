@@ -42,8 +42,8 @@ typedef struct msg msg_t;
 struct msg_w
 {
     unsigned short magicNumber;
-    unsigned short port;
     char GID;
+    unsigned short port;
 } __attribute__((__packed__));
 typedef struct msg_w msg_wt;
 
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 while (1) 
 {
 
-	memset(&hints, 0, sizeof hints);
+  memset(&hints, 0, sizeof hints);
   hints.ai_family = AF_UNSPEC; // set to AF_INET to force IPv4
   hints.ai_socktype = SOCK_DGRAM;
   hints.ai_flags = AI_PASSIVE; // use my IP
