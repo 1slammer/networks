@@ -26,18 +26,19 @@ class ChatClient(object):
 			for sock in read_sockets:
 				# Incoming message from remote server
 				if sock == self.sock:
-					data = sock.recv(4096)
+					data = self.sock.recv(4096)
 					if not data:
-						print "what happened?"
+						print "Connection Closed"
 						sys.exit()
 					else:
-						print data
+						print "Them: " + str(data)
 						self.prompt()
 
 				else: # user entered a message
-					msg = sys.stdin.readline()
+					msg = sys.stdin.readline()[:-1]
+
 					if msg == "Bye Bye Birdie":
-						finished = False
+						finished = True
 						self.finish()
 						break
 					packet = self.formPacket(msg)
@@ -98,7 +99,7 @@ class ChatServer(object):
 						print "Connection Closed"
 						sys.exit()
 					else:
-						print data
+						print "Them: " + str(data)
 						self.prompt()
 
 				else: # user entered a message
