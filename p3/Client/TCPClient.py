@@ -1,5 +1,6 @@
 import sys
 import socket
+import array
 
 class ChatClient(object):
 	def __init__(self, serverIP, serverPort):
@@ -148,6 +149,11 @@ class Client(object):
 		return response
 
 	def parseResponse(self, response):
+		print len(response)
+		responseArray =  array.array('B', response)
+		print responseArray
+		print responseArray[0]
+
 		# if invalid response
 		return self.RESPONSE_INVALID
 
