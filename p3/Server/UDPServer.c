@@ -20,8 +20,8 @@ bool hasMagicNumber( unsigned char bufIn[] );
 bool isCorrectLength( unsigned char bufIn[], int numBytesIn) ;
 bool hasClient(unsigned long ip_in_wait);
 bool portIsInRange( unsigned char bufIn[]) ;
-bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct sockaddr_in their_addr);
-bool sendNoClientMessage(unsigned char bufin[], unsigned short port, int sockfd, struct sockaddr_in their_addr);
+bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, int sockfd, struct sockaddr_in their_addr);
+bool sendNoClientMessage(unsigned char bufin[], int sockfd, struct sockaddr_in their_addr);
 void sendErrorMessage(unsigned char bufIn[], int sockfd, struct addrinfo *, int numbytesIn);
 void sendBadNumMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p);
 void sendBadLengthMsg(unsigned char bufIn[], int sockfd, struct addrinfo *p);
@@ -137,7 +137,8 @@ while (1)
         {
             if(hasClient(ip_in_wait)) 
             {
-                if(sendClientWaitingMessage(buf, ip_in_wait, their_addr.sin_port, sockfd, their_addr)){
+                if(sendClientWaitingMessage(buf, ip_in_wait, their_addr.sin_port, sockfd, their_addr))
+                {
 					printf("test1\n");
                     //freeaddrinfo(servinfo);
                     ip_in_wait = 0;
@@ -153,7 +154,10 @@ while (1)
             else 
             {
 					printf("test3\n");
-                if (sendNoClientMessage(buf, their_addr.sin_port, sockfd, their_addr)) {
+                //Removed second paramter: their_addr.sin_port 
+                //Need to just grab the client's port within the request AlexAg
+                if (sendNoClientMessage(buf, sockfd, their_addr)) 
+                {
                     //freeaddrinfo(servinfo);
 					ip_in_wait = 1;
                 }
@@ -225,9 +229,10 @@ bool portIsInRange(unsigned char bufIn[])
     
 }
 
-bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, unsigned short port, int sockfd, struct sockaddr_in their_addr) 
+bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, int sockfd, struct sockaddr_in their_addr) 
 {
 	printf("sendClientWaiting\n");
+    unsigned short port = (bufIn[2] << 8) + bufIn[3];
     msg_t msg_out;
     int numbytes;
     msg_out.magicNumber = 0xa5a5;
@@ -243,8 +248,11 @@ bool sendClientWaitingMessage(unsigned char bufIn[], unsigned long ip_in, unsign
     return true;
     
 }
-bool sendNoClientMessage(unsigned char bufIn[], unsigned short port, int sockfd, struct sockaddr_in their_addr) {
-    //port = (bufIn[2] << 8) + bufIn[3];
+//Removed second paramter: their_addr.sin_port 
+//Need to just grab the client's port within the request AlexAg
+bool sendNoClientMessage(unsigned char bufIn[], int sockfd, struct sockaddr_in their_addr) 
+{
+    port = (bufIn[2] << 8) + bufIn[3];
 	printf("send port: %d", port);
     msg_wt msg_out;
     int numbytes;

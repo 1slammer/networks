@@ -88,9 +88,10 @@ class ChatServer(object):
 
 class Client(object):
 
-	RESPONSE_INVALID = 0
+	REQUEST_INVALID = 0
 	RESPONSE_READY = 1
 	RESPONSE_WAITING = 2
+	RESPONSE_INVALID = 3
 
 	def __init__(self, serverName, serverPort, clientPort):
 		self.sock = None
@@ -110,8 +111,8 @@ class Client(object):
 		response = self.sendChatRequest(request)
 		state = self.parseResponse(response)
 
-		if state == self.RESPONSE_INVALID:
-			self.displayInvalidResponseMessage(response)
+		if state == self.REQUEST_INVALID:
+			self.displayInvalidRequestMessage(request)
 		elif state == self.RESPONSE_WAITING:
 			self.setupChatServer()
 		elif state == self.RESPONSE_READY:
@@ -154,33 +155,63 @@ class Client(object):
 		print responseArray
 		print responseArray[0]
 
-		# if invalid response
-		return self.RESPONSE_INVALID
+		# if server's response is invalid
+		if not hasMagicNumber(responseArray):
+			return self.RESPONSE_INVALID
+
+		# if invalid request
+		if checkLastByteForErrorCode(responseArray[-1]):
+			#Error message saved @self
+			createErrorMessage(responseArray[-1])
+			return self.REQUEST_INVALID
 
 		# if reponse only magic number
-		return self.RESPONSE_WAITING
+		if len(responseArray) == 5:
+			#See specs about print screen
+			print "The magic number is: %s%s" % responseArray[0], responseArray[0]
+			return self.RESPONSE_WAITING
 
 		# if response complete
+		#NOT DONE
 		return self.RESPONSE_READY
 
 	def hasMagicNumber(self, response):
-		#Valid Magic number is 0xA5A5
-		if response[0:4] == "A5A5":
-			return True;
+		#magic number is A5A5
+		if response[0] == 165 and response[1] == 165:
+			return True
 		else:
 			return False
+
+	def checkLastByteForErrorCode(self, lastByte):
+		#Error message from server will have last byte one of these numbers
+		if lastByte == 1 or lastByte == 2 or lastByte == 4:
+			return True
+		else:
+			return False
+
+	def createErrorMessage(self, errorCode):
+		if errorCode == 1:
+			self.errorMessage = "Client's request did not provide magic number!"
+		elif errorCode == 2:
+			self.errorMessage = "Client's request in not a valid length!"
+		elif errorCode == 4:
+			self.errorMessage = "Client's request port number is out of range!"
+
+
+	def displayInvalidRequestMessage(self, request):
+		print self.errorMessage
+		print request
+		print
 
 
 	def displayInvalidResponseMessage(self, response):
 		print "Invalid response from server"
 		print response
+		print
 
 	def setupChatServer(self):
 		print "waiting for a partner to connect"
-
 		self.chatServer = ChatServer(self.clientPort)
-
-
 
 	def connectToChatServer(self):
 		self.chatClient = ChatClient(serverIP, serverPort)
