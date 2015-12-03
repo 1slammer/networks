@@ -149,6 +149,13 @@ class Client(object):
 
 		return response
 
+	def hasMagicNumber(self, response):
+		#magic number is A5A5
+		if response[0] == 165 and response[1] == 165:
+			return True
+		else:
+			return False
+
 	def parseResponse(self, response):
 		print len(response)
 		responseArray =  array.array('B', response)
@@ -174,13 +181,6 @@ class Client(object):
 		# if response complete
 		#NOT DONE
 		return self.RESPONSE_READY
-
-	def hasMagicNumber(self, response):
-		#magic number is A5A5
-		if response[0] == 165 and response[1] == 165:
-			return True
-		else:
-			return False
 
 	def checkLastByteForErrorCode(self, lastByte):
 		#Error message from server will have last byte one of these numbers
