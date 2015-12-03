@@ -74,12 +74,11 @@ class ChatServer(object):
 		# Listen for incoming connections
 		self.sock.listen(1)
 
-		while True:
-			# Wait for a connection
-			print "Waiting for a connection"
-			self.connection, client_address = self.sock.accept()
+		# Wait for a connection
+		print "Waiting for a connection"
+		self.connection, client_address = self.sock.accept()
 
-			self.run()
+		self.run()
 
 
 	def run(self):
@@ -96,20 +95,17 @@ class ChatServer(object):
 				if sock == self.connection:
 					data = self.connection.recv(4096)
 					if not data:
-						print "what happened?"
-						print sock
-						print len(read_sockets)
-						print read_sockets
-						#sock = None
+						print "Connection Closed"
 						sys.exit()
 					else:
 						print data
 						self.prompt()
 
 				else: # user entered a message
-					msg = sys.stdin.readline()
+					msg = sys.stdin.readline()[:-1]
+
 					if msg == "Bye Bye Birdie":
-						finished = False
+						finished = True
 						self.finish()
 						break
 					packet = self.formPacket(msg)
@@ -117,8 +113,8 @@ class ChatServer(object):
 					self.prompt()
 
 	def prompt(self):
-		print "enter message: "
-		sys.stdout.flush()
+		print "You: "
+		#sys.stdout.flush()
 
 	def formPacket(self, msg):
 		# I think we just send the msg, no header or anything fancy..
