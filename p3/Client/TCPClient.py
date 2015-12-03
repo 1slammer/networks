@@ -157,9 +157,12 @@ class Client(object):
 		# if response complete
 		return self.RESPONSE_READY
 
-	def verifyMagicNumber(self, response):
-		pass
-
+	def hasMagicNumber(self, response):
+		#Valid Magic number is 0xA5A5
+		if response[0:4] == "A5A5":
+			return True;
+		else:
+			return False
 
 
 	def displayInvalidResponseMessage(self, response):
