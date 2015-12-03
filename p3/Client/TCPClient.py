@@ -98,6 +98,13 @@ class Client(object):
 		self.clientPort = clientPort
 		self.setup(serverName, serverPort, clientPort)
 
+	def hasMagicNumber(self, response):
+		#magic number is A5A5
+		if response[0] == 165 and response[1] == 165:
+			return True
+		else:
+			return False
+
 
 	def setup(self, serverName, serverPort, clientPort):
 		# Create a UDP socket
@@ -148,13 +155,6 @@ class Client(object):
 			sys.exit()
 
 		return response
-
-	def hasMagicNumber(self, response):
-		#magic number is A5A5
-		if response[0] == 165 and response[1] == 165:
-			return True
-		else:
-			return False
 
 	def parseResponse(self, response):
 		print len(response)
