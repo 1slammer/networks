@@ -1,5 +1,6 @@
 import sys
 import socket
+import select
 import array
 
 class ChatClient(object):
@@ -16,14 +17,14 @@ class ChatClient(object):
 	def run(self):
 		finished = False
 		while not finished:
-			socket_list = [sys.stdin, s]
+			socket_list = [sys.stdin, self.sock]
 
 			# Get list of sockets which are readable
 			read_sockets, write_sockets, error_sockets = select.select(socket_list , [], [])
 
 			for sock in read_sockets:
 				# Incoming message from remote server
-				if sock == s:
+				if sock == self.sock:
 					data = sock.recv(4096)
 					if not data:
 						print "what happened?"
@@ -78,7 +79,7 @@ class ChatServer(object):
 			connection, client_address = self.sock.accept()
 
 			try:
-				print "connection from %s" % client_address
+				print "connection from %s port %s" % client_address
 
 				# Recieve data in a single chunk
 				data = connection.recv(256)
@@ -238,6 +239,7 @@ class Client(object):
 
 	def connectToChatServer(self, serverIP, serverPort):
 		self.chatClient = ChatClient(serverIP, serverPort)
+		self.chatClient.run()
 
 		
 
